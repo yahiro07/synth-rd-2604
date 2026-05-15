@@ -1,7 +1,5 @@
 import "./styles";
+import { App } from "./components/App";
 import { mountAppRoot } from "./utils/mount-app-root";
 
-function App() {
-  return <div>app</div>;
-}
 mountAppRoot(() => <App />);
