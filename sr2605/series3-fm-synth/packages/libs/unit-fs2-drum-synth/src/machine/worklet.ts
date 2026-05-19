@@ -22,12 +22,13 @@ function createProcessorClass() {
         const { data } = event;
         const { type } = data;
         if (type === "setParameter") {
-          this.dsp.setParameter(data.paramKey, data.value);
+          this.dsp.setParameter(data.ch, data.paramKey, data.value);
+        } else if (type === "setFullParameters") {
+          this.dsp.setAllParameters(data.ch, data.parameters);
         } else if (type === "playTone") {
-          this.dsp.playTone();
+          this.dsp.playTone(data.ch);
         } else if (type === "stopTone") {
-          this.dsp.stopTone();
-        } else if (type === "applyCommand") {
+          this.dsp.stopTone(data.ch);
         }
       };
     }

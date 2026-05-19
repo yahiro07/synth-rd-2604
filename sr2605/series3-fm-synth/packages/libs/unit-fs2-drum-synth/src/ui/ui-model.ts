@@ -5,28 +5,45 @@ import {
   KickParameterKey,
   UnitParameters,
 } from "@/base/parameters";
-import { DrumKitToneId } from "@/base/types";
 import { UnitEngine } from "@/machine/unit-engine";
 
 export function createUiModel(unitEngine: UnitEngine) {
   type StoreState = {
+    currentChannel: number;
     parameters: UnitParameters;
   };
   const initialState: StoreState = {
+    currentChannel: -1,
     parameters: createDefaultUnitParameters(),
   };
   const [state, setState] = createStore<StoreState>(initialState);
   const storeMutations = createStoreMutations(setState, initialState);
   const actions = {
+    setCurrentChannel(ch: number) {
+      if (state.currentChannel !== ch) {
+        storeMutations.setCurrentChannel(ch);
+        const params = unitEngine.getFullParameters(ch);
+        storeMutations.setParameters(params);
+      }
+    },
     setParameter<K extends KickParameterKey>(
       paramKey: K,
       value: UnitParameters[K],
     ) {
       storeMutations.setParameters((prev) => ({ ...prev, [paramKey]: value }));
-      unitEngine.handleCommand({ type: "setParameter", paramKey, value });
+      const ch = state.currentChannel;
+      if (ch !== -1) {
+        unitEngine.handleCommand({ type: "setParameter", ch, paramKey, value });
+      }
     },
-    playTone(toneId: DrumKitToneId) {
-      unitEngine.handleCommand({ type: "playTone", toneId });
+    playTone() {
+      const ch = state.currentChannel;
+      if (ch !== -1) {
+        unitEngine.handleCommand({ type: "playTone", ch });
+      }
+    },
+    dumpParameters() {
+      console.log(JSON.stringify(state.parameters, null, " "));
     },
   };
   return {

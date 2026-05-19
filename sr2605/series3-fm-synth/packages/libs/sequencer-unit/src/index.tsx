@@ -1,36 +1,59 @@
-import type {
-  DrumKitToneId,
-  DrumSynthesizerUnit,
-} from "@my/drum-synthesizer-unit";
 import { JsxElement } from "@my/lib/ax-solid/types";
 import { resumeAudioContextIfNeed } from "@my/lib/mo-music-app/audio-context-helper";
 import { Button } from "@my/lib/mo-solid/components/button";
 import { HoldableButton } from "@my/lib/mo-solid/components/holdable-button";
-import type { MainSynthesizerUnit } from "@my/main-synthesizer-unit";
+import { MainSynthesizerUnit } from "@my/main-synthesizer-unit";
+import { UnitFs2DrumSynth } from "@my/unit-fs2-drum-synth";
 import { createSignal } from "solid-js";
 
 export type SequencerUnit = {
   setupSequencerEngine(): void;
+  handleMidiInput(noteNumber: number, velocity: number): void;
   renderUi(): JsxElement;
+};
+
+type DrumKitToneId = "kick" | "snare" | "openHiHat" | "closedHiHat";
+
+const toneIdToChannelMap = {
+  kick: 0,
+  snare: 1,
+  openHiHat: 2,
+  closedHiHat: 3,
 };
 
 export function createSequencerUnit(args: {
   audioContext: AudioContext;
-  drumSynthesizer: DrumSynthesizerUnit;
+  drumSynthesizer: UnitFs2DrumSynth;
   mainSynthesizer: MainSynthesizerUnit;
 }): SequencerUnit {
   const { audioContext, drumSynthesizer, mainSynthesizer } = args;
 
   return {
     setupSequencerEngine(): void {},
+    handleMidiInput(noteNumber, velocity) {
+      if (noteNumber === 48) {
+        if (velocity > 0) {
+          drumSynthesizer.playTone(toneIdToChannelMap["kick"]);
+        }
+      } else if (noteNumber === 49) {
+        if (velocity > 0) {
+          drumSynthesizer.playTone(toneIdToChannelMap["snare"]);
+        }
+      } else {
+        if (velocity > 0) {
+          mainSynthesizer.noteOn(0, noteNumber, velocity);
+        } else {
+          mainSynthesizer.noteOff(0, noteNumber);
+        }
+      }
+    },
     renderUi() {
       const [currentToneId, setCurrentToneId] =
         createSignal<DrumKitToneId>("kick");
-
       const vm = {
         async playTone(toneId: DrumKitToneId) {
           await resumeAudioContextIfNeed(audioContext);
-          drumSynthesizer.playTone(toneId);
+          drumSynthesizer.playTone(toneIdToChannelMap[toneId]);
           setCurrentToneId(toneId);
         },
         isToneActive(toneId: DrumKitToneId) {
@@ -46,7 +69,9 @@ export function createSequencerUnit(args: {
       return (
         <div class="w-dvw h-dvh flex-vc">
           <div>
-            <drumSynthesizer.renderUi currentToneId={currentToneId()} />
+            <drumSynthesizer.renderUi
+              currentChannel={toneIdToChannelMap[currentToneId()]}
+            />
             <mainSynthesizer.renderUi />
           </div>
           <div class="w-[600px] flex-vl border border-[#aaa] gap-2 p-4">
@@ -64,13 +89,13 @@ export function createSequencerUnit(args: {
               />
               <Button
                 text="HiHat"
-                active={vm.isToneActive("open-hi-hat")}
-                onClick={() => vm.playTone("open-hi-hat")}
+                active={vm.isToneActive("openHiHat")}
+                onClick={() => vm.playTone("openHiHat")}
               />
               <Button
                 text="ClHiHat"
-                active={vm.isToneActive("closed-hi-hat")}
-                onClick={() => vm.playTone("closed-hi-hat")}
+                active={vm.isToneActive("closedHiHat")}
+                onClick={() => vm.playTone("closedHiHat")}
               />
             </div>
             <div class="flex-h">

@@ -1,4 +1,5 @@
-import { m_random } from "@my/lib/ax/math-utils";
+import { seqNumbers } from "@my/lib/ax/array-utils";
+import { assignTyped } from "@my/lib/ax/general-utils";
 import {
   clampValue,
   fracPart,
@@ -6,7 +7,12 @@ import {
   mapUnaryTo,
   power3,
 } from "@my/lib/ax/number-utils";
-import { writeBuffer } from "@my/lib/mo-dsp/buffer-functions";
+import {
+  applyBufferGainRms,
+  clearBuffer,
+  copyBuffer,
+  writeBuffer,
+} from "@my/lib/mo-dsp/buffer-functions";
 import {
   curveMapper,
   mapExpCurve,
@@ -14,15 +20,23 @@ import {
 } from "@my/lib/mo-dsp/curves";
 import { createInterpolator, Interpolator } from "@my/lib/mo-dsp/interpolator";
 import { getOscWaveformPdSaw } from "@my/lib/mo-dsp/pd-saw";
-import { applySoftClip } from "@my/lib/mo-dsp/soft-clip-shaper";
+import {
+  applySoftClip,
+  applySoftClipBuffer,
+} from "@my/lib/mo-dsp/soft-clip-shaper";
 import { midiToFrequency } from "@my/lib/mo-dsp/synthesis-helper";
 import {
-  createDefaultUnitParameters,
   KickEgWave,
   KickParameterKey,
   KickParametersSuit,
+  UnitParameters,
 } from "@/base/parameters";
-import { KickPresetKey, kickPresets } from "@/base/presets";
+import {
+  defaultKickPreset,
+  KickPresetKey,
+  kickPresets,
+  snarePreset1,
+} from "@/base/presets";
 
 function getEgWaveCurve(wave: KickEgWave, x: number, w: number) {
   if (wave === KickEgWave.ds) {
@@ -64,17 +78,19 @@ function calcOscDelta(noteNumber: number, prPitch: number, sampleRate: number) {
   return frequency / sampleRate;
 }
 
-type StateBus = {
-  parameters: KickParametersSuit;
+type VoiceState = {
   sampleRate: number;
+  noteNumber: number;
+  gateOn: boolean;
+  gateOnUptime: number;
+  gateTriggered: boolean;
+  //
   ampEgValue: number;
   pitchEgValue: number;
-  noteNumber: number;
-  currentTime: number;
-  gateOn: boolean;
-  ampToleLevel: number;
-  gateTriggered: boolean;
-  workBuffer: Float32Array | undefined;
+  noiseEgValue: number;
+  ampTopLevel: number;
+  noiseTopLevel: number;
+  //
   osc: {
     miPhaseDelta: Interpolator;
     miShape: Interpolator;
@@ -84,24 +100,73 @@ type StateBus = {
     miGain: Interpolator;
     miDrive: Interpolator;
     miVolume: Interpolator;
+    miNoiseGain: Interpolator;
   };
 };
 
-function osc_processSamples(bus: StateBus, buffer: Float32Array, len: number) {
-  const { osc } = bus;
+function createVoiceState(): VoiceState {
+  return {
+    sampleRate: 0,
+    ampEgValue: 0,
+    pitchEgValue: 0,
+    noiseEgValue: 0,
+    noteNumber: 60,
+    gateOnUptime: 0,
+    gateOn: false,
+    ampTopLevel: 0,
+    noiseTopLevel: 0,
+    gateTriggered: false,
+    osc: {
+      miPhaseDelta: createInterpolator(),
+      miShape: createInterpolator(),
+      phaseAcc: 0,
+    },
+    voicingAmp: {
+      miGain: createInterpolator(),
+      miDrive: createInterpolator(),
+      miVolume: createInterpolator(),
+      miNoiseGain: createInterpolator(),
+    },
+  };
+}
+
+type VoiceParameters = UnitParameters;
+
+type SynthesisBus = {
+  sampleRate: number;
+  workBuffer: Float32Array | undefined;
+  voiceParameters: VoiceParameters[];
+  voices: VoiceState[];
+};
+
+function createSynthesisBus(): SynthesisBus {
+  return {
+    sampleRate: 0,
+    workBuffer: undefined,
+    voiceParameters: [defaultKickPreset, snarePreset1],
+    voices: seqNumbers(2).map(createVoiceState),
+  };
+}
+
+function osc_processSamples(
+  voice: VoiceState,
+  sp: VoiceParameters,
+  buffer: Float32Array,
+  len: number,
+) {
+  const { osc } = voice;
   const { miPhaseDelta, miShape } = osc;
-  if (bus.gateTriggered) {
+  if (voice.gateTriggered) {
     osc.phaseAcc = 0;
     miPhaseDelta.reset();
     miShape.reset();
   }
-  const sp = bus.parameters;
   const prPitch = clampValue(
-    sp.oscPitch + bus.pitchEgValue * sp.pitchEgAmount,
+    sp.oscPitch + voice.pitchEgValue * sp.pitchEgAmount,
     0,
     1,
   );
-  const _phaseDelta = calcOscDelta(bus.noteNumber, prPitch, bus.sampleRate);
+  const _phaseDelta = calcOscDelta(voice.noteNumber, prPitch, voice.sampleRate);
   miPhaseDelta.feed(_phaseDelta, len);
   miShape.feed(sp.oscShape, len);
 
@@ -109,64 +174,73 @@ function osc_processSamples(bus: StateBus, buffer: Float32Array, len: number) {
     const phaseDelta = miPhaseDelta.advance();
     const prShape = miShape.advance();
     osc.phaseAcc = fracPart(osc.phaseAcc + phaseDelta);
-    let y = 0;
-    if (sp.oscWaveNoise) {
-      y = m_random() * 2 - 1;
-    } else {
-      y = getOscWaveformPdSaw(osc.phaseAcc, prShape);
-    }
+    const y = getOscWaveformPdSaw(osc.phaseAcc, prShape);
     buffer[i] = y;
   }
 }
 
-function pitchEg_advance(bus: StateBus) {
-  const sp = bus.parameters;
+function pitchEg_advance(voice: VoiceState, sp: VoiceParameters) {
   const prWave = sp.pitchEgWave;
   const prTime = sp.pitchEgTime;
   const prShape = sp.pitchEgShape;
   const timeMax = power3(prTime) * 4;
   const timePos =
-    timeMax === 0 ? 1 : clampValue(bus.currentTime / timeMax, 0, 1);
+    timeMax === 0 ? 1 : clampValue(voice.gateOnUptime / timeMax, 0, 1);
   const y = getEgWaveCurve(prWave, timePos, prShape);
-  bus.pitchEgValue = y;
+  voice.pitchEgValue = y;
 }
 
-function ampEg_advance(bus: StateBus) {
-  if (bus.gateOn) {
-    const sp = bus.parameters;
+function ampEg_advance(voice: VoiceState, sp: VoiceParameters) {
+  if (voice.gateOn) {
     const prWave = sp.ampEgWave;
     const prTime = sp.ampEgTime;
     const prShape = sp.ampEgShape;
     const timeMax = power3(prTime) * 4;
     const timePos =
-      timeMax === 0 ? 1 : clampValue(bus.currentTime / timeMax, 0, 1);
+      timeMax === 0 ? 1 : clampValue(voice.gateOnUptime / timeMax, 0, 1);
     const y = getEgWaveCurve(prWave, timePos, prShape);
-    bus.ampEgValue = y;
-    bus.ampToleLevel = y;
+    voice.ampEgValue = y;
+    voice.ampTopLevel = y;
   } else {
     const releaseTimeMs = 20;
     const releaseTimeSec = releaseTimeMs / 1000;
-    const t = clampValue(bus.currentTime / releaseTimeSec, 0, 1);
+    const t = clampValue(voice.gateOnUptime / releaseTimeSec, 0, 1);
     const y = 1 - curveMapper.riseInvCosine(t);
-    bus.ampEgValue = y * bus.ampToleLevel;
+    voice.ampEgValue = y * voice.ampTopLevel;
+  }
+}
+
+function noiseEg_advance(voice: VoiceState, sp: VoiceParameters) {
+  if (voice.gateOn) {
+    const prWave = sp.noiseEgWave;
+    const prTime = sp.noiseEgTime;
+    const prShape = sp.noiseEgShape;
+    const timeMax = power3(prTime) * 4;
+    const timePos =
+      timeMax === 0 ? 1 : clampValue(voice.gateOnUptime / timeMax, 0, 1);
+    const y = getEgWaveCurve(prWave, timePos, prShape);
+    voice.noiseEgValue = y;
+    voice.noiseTopLevel = y;
+  } else {
+    const releaseTimeMs = 20;
+    const releaseTimeSec = releaseTimeMs / 1000;
+    const t = clampValue(voice.gateOnUptime / releaseTimeSec, 0, 1);
+    const y = 1 - curveMapper.riseInvCosine(t);
+    voice.noiseEgValue = y * voice.noiseTopLevel;
   }
 }
 
 function voicingAmp_processSamples(
-  bus: StateBus,
+  voice: VoiceState,
+  sp: VoiceParameters,
   buffer: Float32Array,
   len: number,
 ) {
-  const { miGain, miDrive, miVolume } = bus.voicingAmp;
-  if (bus.gateTriggered) {
-    miGain.reset();
-    miDrive.reset();
-    miVolume.reset();
-  }
-  const sp = bus.parameters;
-  miGain.feed(bus.ampEgValue, len);
-  miDrive.feed(sp.ampDrive, len);
-  miVolume.feed(sp.volume, len);
+  const { miGain, miDrive, miVolume } = voice.voicingAmp;
+  const reset = voice.gateTriggered;
+  miGain.feed(voice.ampEgValue, len, reset);
+  miDrive.feed(sp.ampDrive, len, reset);
+  miVolume.feed(sp.volume, len, reset);
   for (let i = 0; i < len; i++) {
     const gain = miGain.advance();
     const drive = miDrive.advance();
@@ -179,49 +253,43 @@ function voicingAmp_processSamples(
   }
 }
 
-function createStateBus(): StateBus {
-  return {
-    parameters: createDefaultUnitParameters(),
-    sampleRate: 0,
-    ampEgValue: 0,
-    pitchEgValue: 0,
-    noteNumber: 60,
-    currentTime: 0,
-    gateOn: false,
-    ampToleLevel: 0,
-    gateTriggered: false,
-    workBuffer: undefined,
-    osc: {
-      miPhaseDelta: createInterpolator(),
-      miShape: createInterpolator(),
-      phaseAcc: 0,
-    },
-    voicingAmp: {
-      miGain: createInterpolator(),
-      miDrive: createInterpolator(),
-      miVolume: createInterpolator(),
-    },
-  };
+function noiseOsc_processSamples(
+  voice: VoiceState,
+  sp: VoiceParameters,
+  buffer: Float32Array,
+  len: number,
+) {
+  const { miNoiseGain } = voice.voicingAmp;
+  const reset = voice.gateTriggered;
+  miNoiseGain.feed(voice.noiseEgValue, len, reset);
+  const noiseVolume = sp.noiseVolume;
+  for (let i = 0; i < len; i++) {
+    const gain = miNoiseGain.advance();
+    buffer[i] += (Math.random() * 2 - 1) * gain * noiseVolume;
+  }
 }
 
 export type KickSynthesizerDsp = {
   prepare(sampleRate: number, maxFrames: number): void;
-  applyPreset(presetKey: KickPresetKey): void;
+  applyPreset(ch: number, presetKey: KickPresetKey): void;
   setParameter<K extends KickParameterKey>(
+    ch: number,
     paramKey: K,
     value: KickParametersSuit[K],
   ): void;
+  setAllParameters(ch: number, parameters: UnitParameters): void;
   processSamples(
     bufferL: Float32Array,
     bufferR: Float32Array,
     len: number,
   ): void;
-  playTone(): void;
-  stopTone(): void;
+  playTone(ch: number): void;
+  stopTone(ch: number): void;
 };
 
 export function createKickSynthesizerDsp(): KickSynthesizerDsp {
-  const bus = createStateBus();
+  const bus = createSynthesisBus();
+  const numChannels = bus.voices.length;
 
   return {
     prepare(sampleRate, maxFrames) {
@@ -229,36 +297,63 @@ export function createKickSynthesizerDsp(): KickSynthesizerDsp {
       if (!(bus.workBuffer && bus.workBuffer.length === maxFrames)) {
         bus.workBuffer = new Float32Array(maxFrames);
       }
+      for (const voice of bus.voices) {
+        voice.sampleRate = sampleRate;
+      }
     },
-    applyPreset(presetKey) {
-      bus.parameters = kickPresets[presetKey];
+    applyPreset(ch, presetKey) {
+      if (ch >= numChannels) return;
+      bus.voiceParameters[ch] = kickPresets[presetKey];
     },
-    setParameter(paramKey, value) {
-      bus.parameters[paramKey] = value;
+    setParameter(ch, paramKey, value) {
+      if (ch >= numChannels) return;
+      bus.voiceParameters[ch][paramKey] = value;
+    },
+    setAllParameters(ch, parameters) {
+      if (ch >= numChannels) return;
+      assignTyped(bus.voiceParameters[ch], parameters);
     },
     processSamples(bufferL, bufferR, len) {
       if (bus.sampleRate === 0 || !bus.workBuffer) return;
-      const buffer = bus.workBuffer;
-      buffer.fill(0);
       const timeLength = len / bus.sampleRate;
-      pitchEg_advance(bus);
-      ampEg_advance(bus);
-      osc_processSamples(bus, buffer, len);
-      voicingAmp_processSamples(bus, buffer, len);
-      writeBuffer(bufferL, buffer, len);
-      writeBuffer(bufferR, buffer, len);
-      bus.currentTime += timeLength;
-      bus.gateTriggered = false;
+      clearBuffer(bufferL, len);
+      for (let i = 0; i < bus.voices.length; i++) {
+        const voice = bus.voices[i];
+        const sp = bus.voiceParameters[i];
+        const buffer = bus.workBuffer;
+        clearBuffer(buffer, len);
+        pitchEg_advance(voice, sp);
+        ampEg_advance(voice, sp);
+        noiseEg_advance(voice, sp);
+        if (sp.oscOn) {
+          osc_processSamples(voice, sp, buffer, len);
+          voicingAmp_processSamples(voice, sp, buffer, len);
+        }
+        if (sp.noiseOn) {
+          noiseOsc_processSamples(voice, sp, buffer, len);
+        }
+        writeBuffer(bufferL, buffer, len);
+
+        voice.gateOnUptime += timeLength;
+        voice.gateTriggered = false;
+      }
+      applyBufferGainRms(bufferL, len, bus.voices.length);
+      applySoftClipBuffer(bufferL, len);
+      copyBuffer(bufferR, bufferL, len);
     },
-    playTone() {
-      bus.noteNumber = 32;
-      bus.currentTime = 0;
-      bus.gateOn = true;
-      bus.gateTriggered = true;
+    playTone(ch) {
+      if (ch >= numChannels) return;
+      const voice = bus.voices[ch];
+      voice.noteNumber = 32;
+      voice.gateOnUptime = 0;
+      voice.gateOn = true;
+      voice.gateTriggered = true;
     },
-    stopTone() {
-      bus.gateOn = false;
-      bus.currentTime = 0;
+    stopTone(ch) {
+      if (ch >= numChannels) return;
+      const voice = bus.voices[ch];
+      voice.gateOn = false;
+      voice.gateOnUptime = 0;
     },
   };
 }
