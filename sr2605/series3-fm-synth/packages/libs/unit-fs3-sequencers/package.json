@@ -1,0 +1,6 @@
+{
+  "name": "@my/unit-fs3-sequencers",
+  "exports": {
+    ".": "./src/index.tsx"
+  }
+}

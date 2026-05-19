@@ -4,10 +4,10 @@ import {
   resumeAudioContextIfNeed,
 } from "@my/lib/mo-music-app/audio-context-helper";
 import { setupMidiKeyboardInput } from "@my/lib/mo-music-app/midi-keyboard-input";
-import { createUnitFs1FmSynth } from "@my/unit-fs1-fm-synth";
+import { createUnitFs2DrumSynth } from "@my/unit-fs2-drum-synth";
 import { onCleanup } from "solid-js";
 
-const synth = createUnitFs1FmSynth();
+const synth = createUnitFs2DrumSynth();
 
 async function setupApplication() {
   configureAudioSessionPlayback();
@@ -19,10 +19,9 @@ async function setupApplication() {
     async noteCallback(noteNumber, velocity) {
       // console.log("midi note", noteNumber, velocity);
       await resumeAudioContextIfNeed(audioContext);
+      const ch = noteNumber % 12;
       if (velocity > 0) {
-        synth.noteOn(0, noteNumber, velocity);
-      } else {
-        synth.noteOff(0, noteNumber);
+        synth.playTone(ch);
       }
     },
   });
@@ -31,7 +30,7 @@ async function setupApplication() {
 
 function App() {
   void setupApplication();
-  return <synth.renderUi />;
+  return <synth.renderUi currentChannel={0} />;
 }
 
 mountAppRoot(() => <App />);

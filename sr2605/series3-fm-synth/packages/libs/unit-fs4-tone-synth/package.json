@@ -1,5 +1,5 @@
 {
-  "name": "@my/sequencer-unit",
+  "name": "@my/unit-fs4-tone-synth",
   "exports": {
     ".": "./src/index.tsx"
   }

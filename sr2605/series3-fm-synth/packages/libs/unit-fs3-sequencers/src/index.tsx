@@ -1,16 +1,12 @@
-import { JsxElement } from "@my/lib/ax-solid/types";
 import { resumeAudioContextIfNeed } from "@my/lib/mo-music-app/audio-context-helper";
 import { Button } from "@my/lib/mo-solid/components/button";
 import { HoldableButton } from "@my/lib/mo-solid/components/holdable-button";
-import { MainSynthesizerUnit } from "@my/main-synthesizer-unit";
-import { UnitFs2DrumSynth } from "@my/unit-fs2-drum-synth";
+import {
+  DrumSynthesizerUnit,
+  InstrumentSynthesizerUnit,
+  SequencerUnit,
+} from "@my/unit-contract";
 import { createSignal } from "solid-js";
-
-export type SequencerUnit = {
-  setupSequencerEngine(): void;
-  handleMidiInput(noteNumber: number, velocity: number): void;
-  renderUi(): JsxElement;
-};
 
 type DrumKitToneId = "kick" | "snare" | "openHiHat" | "closedHiHat";
 
@@ -21,10 +17,10 @@ const toneIdToChannelMap = {
   closedHiHat: 3,
 };
 
-export function createSequencerUnit(args: {
+export function createUnitFs3Sequencers(args: {
   audioContext: AudioContext;
-  drumSynthesizer: UnitFs2DrumSynth;
-  mainSynthesizer: MainSynthesizerUnit;
+  drumSynthesizer: DrumSynthesizerUnit;
+  mainSynthesizer: InstrumentSynthesizerUnit;
 }): SequencerUnit {
   const { audioContext, drumSynthesizer, mainSynthesizer } = args;
 
@@ -68,52 +64,59 @@ export function createSequencerUnit(args: {
       };
       return (
         <div class="w-dvw h-dvh flex-vc">
-          <div>
+          <div class="flex-h">
             <drumSynthesizer.renderUi
               currentChannel={toneIdToChannelMap[currentToneId()]}
             />
-            <mainSynthesizer.renderUi />
-          </div>
-          <div class="w-[600px] flex-vl border border-[#aaa] gap-2 p-4">
-            <div>sequencer</div>
-            <div class="flex-v gap-2">
-              <Button
-                text="Kick"
-                active={vm.isToneActive("kick")}
-                onClick={() => vm.playTone("kick")}
-              />
-              <Button
-                text="Snare"
-                active={vm.isToneActive("snare")}
-                onClick={() => vm.playTone("snare")}
-              />
-              <Button
-                text="HiHat"
-                active={vm.isToneActive("openHiHat")}
-                onClick={() => vm.playTone("openHiHat")}
-              />
-              <Button
-                text="ClHiHat"
-                active={vm.isToneActive("closedHiHat")}
-                onClick={() => vm.playTone("closedHiHat")}
-              />
+            <div class="border border-[#ccc]">
+              <mainSynthesizer.renderUi />
             </div>
-            <div class="flex-h">
-              <HoldableButton
-                text="note C"
-                onDown={() => vm.noteOn(60)}
-                onUp={() => vm.noteOff(60)}
-              />
-              <HoldableButton
-                text="note D"
-                onDown={() => vm.noteOn(62)}
-                onUp={() => vm.noteOff(62)}
-              />
-              <HoldableButton
-                text="note E"
-                onDown={() => vm.noteOn(64)}
-                onUp={() => vm.noteOff(64)}
-              />
+          </div>
+          <div class="flex-h">
+            <div class="w-[600px] flex-vl border border-[#aaa] gap-2 p-4">
+              <div>sequencer</div>
+              <div class="flex-v gap-2">
+                <Button
+                  text="Kick"
+                  active={vm.isToneActive("kick")}
+                  onClick={() => vm.playTone("kick")}
+                />
+                <Button
+                  text="Snare"
+                  active={vm.isToneActive("snare")}
+                  onClick={() => vm.playTone("snare")}
+                />
+                <Button
+                  text="HiHat"
+                  active={vm.isToneActive("openHiHat")}
+                  onClick={() => vm.playTone("openHiHat")}
+                />
+                <Button
+                  text="ClHiHat"
+                  active={vm.isToneActive("closedHiHat")}
+                  onClick={() => vm.playTone("closedHiHat")}
+                />
+              </div>
+              <div class="flex-h">
+                <HoldableButton
+                  text="note C"
+                  onDown={() => vm.noteOn(60)}
+                  onUp={() => vm.noteOff(60)}
+                />
+                <HoldableButton
+                  text="note D"
+                  onDown={() => vm.noteOn(62)}
+                  onUp={() => vm.noteOff(62)}
+                />
+                <HoldableButton
+                  text="note E"
+                  onDown={() => vm.noteOn(64)}
+                  onUp={() => vm.noteOff(64)}
+                />
+              </div>
+            </div>
+            <div class="w-[700px] h-[350px] flex-vl border border-[#aaa] gap-2 p-4">
+              <div>sequencer 2</div>
             </div>
           </div>
         </div>

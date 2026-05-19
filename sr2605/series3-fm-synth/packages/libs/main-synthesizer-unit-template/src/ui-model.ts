@@ -1,6 +1,6 @@
 import { createStoreMutations } from "@my/lib/ax-solid/store-mutations";
 import { createStore } from "solid-js/store";
-import { createDefaultUnitParameters, UnitParameters } from "@/parameters";
+import { UnitParameters } from "@/parameters";
 import { UnitEngine } from "@/unit-engine";
 
 export function createUiModel(unitEngine: UnitEngine) {
@@ -8,28 +8,20 @@ export function createUiModel(unitEngine: UnitEngine) {
     parameters: UnitParameters;
   };
   const initialState: StoreState = {
-    parameters: createDefaultUnitParameters(),
+    parameters: unitEngine.getParameters(),
   };
   const [state, setState] = createStore<StoreState>(initialState);
   const storeMutations = createStoreMutations(setState, initialState);
   const actions = {
-    setOscPitch(value: number) {
-      storeMutations.setParameters({ oscPitch: value });
+    setParameter(key: keyof UnitParameters, value: number) {
+      storeMutations.setParameters({ ...state.parameters, [key]: value });
+      unitEngine.setParameter(key, value);
     },
-    noteOn(ch: number, noteNumber: number, velocity: number): void {
-      unitEngine.handleCommand({
-        type: "noteOn",
-        channel: ch,
-        noteNumber,
-        velocity,
-      });
+    noteOn(ch: number, noteNumber: number): void {
+      unitEngine.noteOn(ch, noteNumber);
     },
     noteOff(ch: number, noteNumber: number): void {
-      unitEngine.handleCommand({
-        type: "noteOff",
-        channel: ch,
-        noteNumber,
-      });
+      unitEngine.noteOff(ch, noteNumber);
     },
   };
   return {

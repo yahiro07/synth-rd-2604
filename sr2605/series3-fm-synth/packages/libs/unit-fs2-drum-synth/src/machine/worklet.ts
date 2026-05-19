@@ -1,9 +1,13 @@
 import { konsoleEnvs } from "@my/lib/ax/konsole";
+import { checkBufferSignalsValid } from "@my/lib/mo-dsp/debug-waves";
 import {
   createKickSynthesizerDsp,
   KickSynthesizerDsp,
 } from "@/dsp/kick-synthesizer-dsp";
-import { WorkletInputMessage } from "@/machine/worklet-types";
+import {
+  WorkletInputMessage,
+  workletProcessorName,
+} from "@/machine/worklet-types";
 
 konsoleEnvs.isDebug = import.meta.env.DEV;
 
@@ -49,9 +53,10 @@ function createProcessorClass() {
         bufferL.fill(0);
         this.dsp.processSamples(bufferL, bufferL, bufferL.length);
       }
+      checkBufferSignalsValid(bufferL);
       return true;
     }
   };
 }
 
-registerProcessor("my-processor", createProcessorClass());
+registerProcessor(workletProcessorName, createProcessorClass());
