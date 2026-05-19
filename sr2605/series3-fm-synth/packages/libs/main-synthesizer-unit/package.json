@@ -1,0 +1,6 @@
+{
+  "name": "@my/main-synthesizer-unit",
+  "exports": {
+    ".": "./src/index.tsx"
+  }
+}
