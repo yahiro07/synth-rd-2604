@@ -1,0 +1,8 @@
+{
+  "name": "synth-lib-monorepo-root",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/**/*"
+  ]
+}

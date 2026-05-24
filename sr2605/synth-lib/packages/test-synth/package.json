@@ -1,0 +1,8 @@
+{
+  "name": "test-synthesizer",
+  "type": "module",
+  "private": "true",
+  "exports": {
+    ".": "./index.ts"
+  }
+}
