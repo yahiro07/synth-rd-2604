@@ -1,0 +1,8 @@
+{
+  "name": "note-voicing-adapter",
+  "type": "module",
+  "private": "true",
+  "exports": {
+    ".": "./index.ts"
+  }
+}
