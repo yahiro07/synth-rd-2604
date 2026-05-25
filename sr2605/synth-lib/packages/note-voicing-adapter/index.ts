@@ -2,22 +2,26 @@ export function createNoteVoicingAdapter(destNotePort: {
   noteOn(noteNumber: number): void;
   noteOff(noteNumber: number): void;
 }) {
-  const notes = new Set<number>();
+  // console.log("noteVoicingAdapter 0907");
+
+  const sentNotes = new Set<number>();
   const offTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
   const internal = {
-    noteOn(noterNumber: number) {
+    emitNoteOn(noterNumber: number) {
       destNotePort.noteOn(noterNumber);
-      notes.add(noterNumber);
+      sentNotes.add(noterNumber);
     },
-    noteOff(noteNumber: number) {
-      destNotePort.noteOff(noteNumber);
-      notes.delete(noteNumber);
+    emitNoteOff(noteNumber: number) {
+      if (sentNotes.has(noteNumber)) {
+        destNotePort.noteOff(noteNumber);
+        sentNotes.delete(noteNumber);
+      }
     },
     reserveNoteOff(noteNumber: number, durationSec: number) {
       const timer = setTimeout(() => {
         offTimers.delete(noteNumber);
-        internal.noteOff(noteNumber);
+        internal.emitNoteOff(noteNumber);
       }, durationSec * 1000);
       offTimers.set(noteNumber, timer);
     },
@@ -33,22 +37,23 @@ export function createNoteVoicingAdapter(destNotePort: {
         clearTimeout(timer);
       }
       offTimers.clear();
-      for (const note of notes) {
+      for (const note of sentNotes) {
         destNotePort.noteOff(note);
       }
-      notes.clear();
+      sentNotes.clear();
     },
   };
   return {
     noteOn(noteNumber: number, durationSec?: number) {
       internal.cancelNoteOffReservation(noteNumber);
-      internal.noteOn(noteNumber);
+      internal.emitNoteOn(noteNumber);
       if (durationSec !== undefined) {
         internal.reserveNoteOff(noteNumber, durationSec);
       }
     },
     noteOff(noteNumber: number) {
-      internal.noteOff(noteNumber);
+      internal.cancelNoteOffReservation(noteNumber);
+      internal.emitNoteOff(noteNumber);
     },
     allNotesOff() {
       internal.allNotesOff();
