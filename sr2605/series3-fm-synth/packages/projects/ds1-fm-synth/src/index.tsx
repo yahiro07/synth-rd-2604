@@ -1,7 +1,7 @@
-// import "./app0-fm-synth";
+import "./app0-fm-synth";
 // import "./app1-drum-synth";
-//import "./app2-desk-board"
-import "./app3-tone-synth";
+// import "./app2-desk-board";
+// import "./app3-tone-synth";
 //
 // import "./x/dev0a-algo-edit";
 // import "./x/dev0b-algo-edit";
