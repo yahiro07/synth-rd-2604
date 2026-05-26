@@ -2,7 +2,7 @@ export function createNoteVoicingDurationAdapter(destNotePort: {
   noteOn(noteNumber: number): void;
   noteOff(noteNumber: number): void;
 }) {
-  // console.log("noteVoicingAdapter 0907");
+  // console.log("noteVoicingAdapter 0054");
 
   const sentNotes = new Set<number>();
   const offTimers = new Map<number, ReturnType<typeof setTimeout>>();
@@ -46,6 +46,7 @@ export function createNoteVoicingDurationAdapter(destNotePort: {
   return {
     noteOn(noteNumber: number, durationSec?: number) {
       internal.cancelNoteOffReservation(noteNumber);
+      internal.emitNoteOff(noteNumber);
       internal.emitNoteOn(noteNumber);
       if (durationSec !== undefined) {
         internal.reserveNoteOff(noteNumber, durationSec);

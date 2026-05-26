@@ -3,6 +3,7 @@ function midiToFrequency(midiNote: number): number {
 }
 
 export function createTestSynthesizer() {
+  // console.log("testSynthesizer 0038");
   const audioContext = new AudioContext();
   const noteNodes: Record<number, OscillatorNode> = {};
 
