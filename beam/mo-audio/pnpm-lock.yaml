@@ -10,14 +10,14 @@ importers:
     dependencies:
       '@beam/ax':
         specifier: github:yahiro07/synth-rd-2604#main&path:/beam/ax
-        version: https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394#path:/beam/ax
+        version: https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/d4af94984debe47edf0e43e1d64e40c8caaf29da#path:/beam/ax
 
 packages:
 
-  '@beam/ax@https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394#path:/beam/ax':
-    resolution: {path: /beam/ax, tarball: https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394}
+  '@beam/ax@https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/d4af94984debe47edf0e43e1d64e40c8caaf29da#path:/beam/ax':
+    resolution: {path: /beam/ax, tarball: https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/d4af94984debe47edf0e43e1d64e40c8caaf29da}
     version: 0.0.0
 
 snapshots:
 
-  '@beam/ax@https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394#path:/beam/ax': {}
+  '@beam/ax@https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/d4af94984debe47edf0e43e1d64e40c8caaf29da#path:/beam/ax': {}
