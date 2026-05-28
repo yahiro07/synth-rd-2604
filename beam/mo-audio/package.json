@@ -1,0 +1,8 @@
+{
+  "name": "@beam/mo-audio",
+  "type": "module",
+  "private": "true",
+  "peerDependencies": {
+    "@beam/ax": "github:yahiro07/synth-rd-2604#main&path:/beam/ax"
+  }
+}

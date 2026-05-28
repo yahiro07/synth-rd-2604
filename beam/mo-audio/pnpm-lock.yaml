@@ -1,0 +1,23 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@beam/ax':
+        specifier: github:yahiro07/synth-rd-2604#main&path:/beam/ax
+        version: https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394#path:/beam/ax
+
+packages:
+
+  '@beam/ax@https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394#path:/beam/ax':
+    resolution: {path: /beam/ax, tarball: https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394}
+    version: 0.0.0
+
+snapshots:
+
+  '@beam/ax@https://codeload.github.com/yahiro07/synth-rd-2604/tar.gz/ec3e120f63e3780fd87e5e23286c215b662b2394#path:/beam/ax': {}
