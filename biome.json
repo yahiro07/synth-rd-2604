@@ -12,6 +12,9 @@
         "useImportType": "off",
         "noNonNullAssertion": "off"
       },
+      "suspicious": {
+        "noExplicitAny": "off"
+      },
       "complexity": {
         "noUselessSwitchCase": "off"
       },
