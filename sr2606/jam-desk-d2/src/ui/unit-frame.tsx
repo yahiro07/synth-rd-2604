@@ -1,7 +1,8 @@
 /* <UnitFrame id="osc1" unitClassKey="osc" destUnitId="mixer1.ch0" />  */
 
 import { useEffect, useMemo } from "react";
-import { hostSystem, UnitClassKey } from "@/units/units";
+import { hostSystem } from "@/host/host-system";
+import { UnitClassKey } from "@/units/units";
 
 export const UnitFrame = ({
   unitId,

@@ -2,7 +2,7 @@ import { seqNumbers } from "beams/ax/array-utils";
 import {
   HostInterfaceForIframe,
   HostInterfaceRaw,
-} from "@/base/unit-interfaces";
+} from "@/contract/unit-interfaces";
 
 function _expectedUseCase_defineUnitInApp() {
   let hostInterface!: HostInterfaceRaw;

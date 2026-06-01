@@ -1,6 +1,6 @@
-import { UnitInputPort, UnitOutputPort } from "@/base/unit-interfaces";
+import { UnitInputPort, UnitOutputPort } from "@/contract/unit-interfaces";
 
-function createOutputPortImpl(
+export function createOutputPortImpl(
   fnCreateGainNode: () => GainNode,
 ): UnitOutputPort {
   let connectedInputPort: UnitInputPort | null;
@@ -69,11 +69,4 @@ function createOutputPortImpl(
       },
     },
   };
-}
-
-const audioContext = new AudioContext();
-export const gAudioContext = audioContext;
-
-export function createOutputPort(): UnitOutputPort {
-  return createOutputPortImpl(() => audioContext.createGain());
 }
