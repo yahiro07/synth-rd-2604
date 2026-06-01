@@ -1,25 +1,24 @@
 import { UnitInputPort, UnitOutputPort } from "@/base/unit-interfaces";
 
 function createUnitOutputPort(
-  ac: AudioContext,
-  withAudio: boolean,
+  fnCreateGainNode: () => GainNode,
 ): UnitOutputPort {
   let connectedInputPort: UnitInputPort | null;
-  const audioRelayNode = withAudio ? ac.createGain() : null;
+  let audioRelayNode: AudioNode | null;
 
   const core = {
     connectTo(port: UnitInputPort) {
       if (connectedInputPort) {
         core.disconnectFrom(connectedInputPort);
       }
-      if (audioRelayNode) {
-        port.handlers.audioInput?.connectAudioFrom(audioRelayNode);
+      if (audioRelayNode && port.audioInput) {
+        audioRelayNode.connect(port.audioInput?.node);
       }
       connectedInputPort = port;
     },
     disconnectFrom(port: UnitInputPort) {
-      if (audioRelayNode) {
-        port.handlers.audioInput?.disconnectAudioFrom(audioRelayNode);
+      if (audioRelayNode && port.audioInput) {
+        audioRelayNode.disconnect(port.audioInput?.node);
       }
       if (connectedInputPort === port) {
         connectedInputPort = null;
@@ -32,46 +31,40 @@ function createUnitOutputPort(
     proxies: {
       noteOutput: {
         noteOn(note: number) {
-          connectedInputPort?.handlers.noteInput?.noteOn(note);
+          connectedInputPort?.noteInput?.noteOn(note);
         },
         noteOff(note: number) {
-          connectedInputPort?.handlers.noteInput?.noteOff(note);
+          connectedInputPort?.noteInput?.noteOff(note);
         },
       },
       cvGateOutput: {
         setCv(cv: number) {
-          connectedInputPort?.handlers.cvGateInput?.setCv(cv);
+          connectedInputPort?.cvGateInput?.setCv(cv);
         },
         setGate(gate: boolean) {
-          connectedInputPort?.handlers.cvGateInput?.setGate(gate);
+          connectedInputPort?.cvGateInput?.setGate(gate);
         },
       },
       clockOutput: {
         reset() {
-          connectedInputPort?.handlers.clockInput?.reset();
+          connectedInputPort?.clockInput?.reset();
         },
         onStep(fn: () => void) {
-          connectedInputPort?.handlers.clockInput?.onStep(fn);
+          connectedInputPort?.clockInput?.onStep(fn);
         },
       },
       switcherOutput: {
         emitState() {
-          return connectedInputPort?.handlers.switcherInput?.emitState() || {};
+          return connectedInputPort?.switcherInput?.emitState() || {};
         },
         applyState(state: Record<string, any>) {
-          connectedInputPort?.handlers.switcherInput?.applyState(state);
+          connectedInputPort?.switcherInput?.applyState(state);
         },
       },
       audioOutput: {
-        connectAudioFrom(node: AudioNode) {
-          if (audioRelayNode) {
-            node.connect(audioRelayNode);
-          }
-        },
-        disconnectAudioFrom(node: AudioNode) {
-          if (audioRelayNode) {
-            node.disconnect(audioRelayNode);
-          }
+        get node() {
+          audioRelayNode ??= fnCreateGainNode();
+          return audioRelayNode;
         },
       },
     },

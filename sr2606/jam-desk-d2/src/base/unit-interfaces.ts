@@ -21,18 +21,15 @@ type SwitcherPort = {
 };
 
 type AudioPort = {
-  connectAudioFrom(node: AudioNode): void;
-  disconnectAudioFrom(node: AudioNode): void;
+  node: AudioNode;
 };
 
 export type UnitInputPort = {
-  handlers: {
-    noteInput?: NotePort;
-    cvGateInput?: CvGatePort;
-    clockInput?: ClockPort;
-    switcherInput?: SwitcherPort;
-    audioInput?: AudioPort;
-  };
+  noteInput?: NotePort;
+  cvGateInput?: CvGatePort;
+  clockInput?: ClockPort;
+  switcherInput?: SwitcherPort;
+  audioInput?: AudioPort;
 };
 
 export type UnitOutputPort = {
@@ -48,8 +45,8 @@ export type UnitOutputPort = {
 };
 
 export type UnitInstance = {
-  unitId: string;
-  unitClassKey: string;
+  // unitId: string;
+  // unitClassKey: string;
   outputPort: UnitOutputPort;
   inputPort: UnitInputPort;
   multiChannelOutputs?: {
@@ -63,16 +60,38 @@ export type UnitInstance = {
   render(): ReactNode;
 };
 
+type OutputPortCreator = () => UnitOutputPort;
+
 export type UnitClassFn = (
-  outputPortCreator: (withAudio?: boolean) => UnitOutputPort,
+  outputPortCreator: OutputPortCreator,
 ) => UnitInstance;
 
-/*
-expected react wrapper usage
-<UnitFrame id="mixer1" unitClassKey="mixer" destUnitId="$output">
-<UnitFrame id="osc1" unitClassKey="osc" destUnitId="mixer1.ch0" />  //connect to multi input
-<UnitFrame id="seq1" unitClassKey="seq" destUnitId="osc1" />
-<UnitFrame id="osc2" unitClassKey="osc" destUnitId="mixer1.ch1" />  //connect to multi input
-<UnitFrame id="seq2" unitClassKey="seq" destUnitId="osc1" />
-<UnitFrame id="clocker1" unitClassKey="clocker" destUnitId={{ ch0: "seq1", ch1: "seq2" }} />  //connect from multi output
-*/
+export type HostInterfaceRaw = {
+  defineUnitClass(
+    fn: (ac: AudioContext, createOutputPort: OutputPortCreator) => UnitInstance,
+  ): void;
+};
+
+export type HostInterfaceForIframe = {
+  raw: HostInterfaceRaw;
+  audioContext: AudioContext;
+  audioDestinationNode: AudioNode;
+  audioSourceNode: AudioNode;
+  createOutputPort(): UnitOutputPort;
+  defineUnit(args: {
+    inputPort: {
+      noteInput?: NotePort;
+      cvGateInput?: CvGatePort;
+      clockInput?: ClockPort;
+      switcherInput?: SwitcherPort;
+    };
+    multiChannelOutputs?: {
+      numChannels: number;
+      channelPorts: UnitOutputPort[];
+    };
+    multiChannelInputs?: {
+      numChannels: number;
+      channelPorts: UnitInputPort[];
+    };
+  }): void;
+};
