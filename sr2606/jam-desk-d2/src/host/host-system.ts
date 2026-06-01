@@ -20,7 +20,7 @@ function createHostSystem() {
       unitId: string,
     ): UnitInstanceInHostSide {
       const factory = unitFactories[unitClassKey];
-      const unit = { ...factory(), unitId };
+      const unit = { ...factory(), unitId } as UnitInstanceInHostSide;
       units[unitId] = unit;
       return unit;
     },

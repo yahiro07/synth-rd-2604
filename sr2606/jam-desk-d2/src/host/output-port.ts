@@ -1,8 +1,11 @@
-import { UnitInputPort, UnitOutputPort } from "@/contract/unit-interfaces";
+import {
+  UnitInputPort,
+  UnitOutputPortInHostSide,
+} from "@/contract/unit-interfaces";
 
 export function createOutputPortImpl(
   fnCreateGainNode: () => GainNode,
-): UnitOutputPort {
+): UnitOutputPortInHostSide {
   let connectedInputPort: UnitInputPort | null;
   let audioRelayNode: AudioNode | null;
 
@@ -45,11 +48,8 @@ export function createOutputPortImpl(
       },
     },
     clockOutput: {
-      reset() {
-        connectedInputPort?.clockInput?.reset();
-      },
-      onStep(fn: () => void) {
-        connectedInputPort?.clockInput?.onStep(fn);
+      onStep(stepIndex: number) {
+        connectedInputPort?.clockInput?.onStep(stepIndex);
       },
     },
     switcherOutput: {

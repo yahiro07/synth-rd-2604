@@ -11,11 +11,12 @@ type CvGatePort = {
 };
 
 type ClockPort = {
-  reset(): void;
-  onStep(fn: () => void): void; //4ppq
+  start?(): void;
+  step?(stepIndex: number): void; //4ppq
+  stop?(): void;
 };
 
-type SwitcherPort = {
+type StatePort = {
   emitState(): Record<string, any>;
   applyState(state: Record<string, any>): void;
 };
@@ -25,75 +26,84 @@ type AudioPort = {
 };
 
 export type UnitInputPort = {
+  audioInput?: AudioPort;
   noteInput?: NotePort;
   cvGateInput?: CvGatePort;
   clockInput?: ClockPort;
-  switcherInput?: SwitcherPort;
-  audioInput?: AudioPort;
+  stateInput?: StatePort;
 };
 
 export type UnitOutputPort = {
-  connectTo(port: UnitInputPort): void;
-  disconnectFrom(port: UnitInputPort): void;
+  audioOutput: AudioPort;
   noteOutput: NotePort;
   cvGateOutput: CvGatePort;
   clockOutput: ClockPort;
-  switcherOutput: SwitcherPort;
-  audioOutput: AudioPort;
+  stateOutput: StatePort;
+};
+
+export type UnitOutputPortInHostSide = UnitOutputPort & {
+  connectTo(port: UnitInputPort): void;
+  disconnectFrom(port: UnitInputPort): void;
 };
 
 export type UnitInstance = {
-  // unitId: string;
-  // unitClassKey: string;
   outputPort: UnitOutputPort;
   inputPort: UnitInputPort;
-  multiChannelOutputs?: {
-    numChannels: number;
-    channelPorts: UnitOutputPort[];
-  };
-  multiChannelInputs?: {
-    numChannels: number;
-    channelPorts: UnitInputPort[];
-  };
+  outputPorts?: UnitOutputPort[];
+  inputPorts?: UnitInputPort[];
   render(): ReactNode;
 };
 
-export type UnitInstanceInHostSide = UnitInstance & {
+export type UnitInstanceInHostSide = {
+  // unitClassKey: string;
   unitId: string;
+  outputPort: UnitOutputPortInHostSide;
+  inputPort: UnitInputPort;
+  outputPorts?: UnitOutputPort[];
+  inputPorts?: UnitInputPort[];
+  render(): ReactNode;
 };
 
-type OutputPortCreator = () => UnitOutputPort;
+type OutputPortCreator = () => UnitOutputPortInHostSide;
 
 export type UnitClassFn = (
   outputPortCreator: OutputPortCreator,
 ) => UnitInstance;
 
-export type HostInterfaceRaw = {
+export type HostInterfaceForReact = {
   defineUnitClass(
     fn: (ac: AudioContext, createOutputPort: OutputPortCreator) => UnitInstance,
   ): void;
 };
 
+export type UnitInputPortC = {
+  audioInput: AudioPort;
+  setHandlers(handlers: {
+    noteInput?: NotePort;
+    cvGateInput?: CvGatePort;
+    clockInput?: ClockPort;
+    statInput?: StatePort;
+  }): void;
+};
+
 export type HostInterfaceForIframe = {
-  raw: HostInterfaceRaw;
+  // raw: HostInterfaceRaw;
   audioContext: AudioContext;
-  audioDestinationNode: AudioNode;
-  audioSourceNode: AudioNode;
-  createOutputPort(): UnitOutputPort;
-  defineUnit(args: {
-    inputPort: {
-      noteInput?: NotePort;
-      cvGateInput?: CvGatePort;
-      clockInput?: ClockPort;
-      switcherInput?: SwitcherPort;
-    };
-    multiChannelOutputs?: {
-      numChannels: number;
-      channelPorts: UnitOutputPort[];
-    };
-    multiChannelInputs?: {
-      numChannels: number;
-      channelPorts: UnitInputPort[];
-    };
+  // defaultOutputNode: AudioNode;
+  // defaultInputNode: AudioNode;
+  // audioDestinationNode: AudioNode;
+  // audioSourceNode: AudioNode;
+  primaryOutputPort: UnitOutputPort;
+  primaryInputPort: UnitInputPortC;
+  addMultiChannelOutputPort(): UnitOutputPort;
+  addMultiChannelInputPort(): UnitInputPortC;
+  // outputPort: UnitOutputPort & { channels(index: number): UnitOutputPort };
+  // inputPort: UnitInputPortC & { channels(index: number): UnitInputPortC };
+  // completeUnitRegistration(): void;
+  registerUnit(args: {
+    // outputPort?: UnitOutputPort;
+    // inputPort?: UnitInputPort;
+    // multiChannelOutputPorts?: UnitOutputPort[];
+    // multiChannelInputPorts?: UnitInputPortC[];
   }): void;
 };
