@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type NotePort = {
-  noteOn(note: number): void; //midi note number
+  noteOn(note: number, velocity?: number): void; //midi note number, velocity 0~1
   noteOff(note: number): void;
 };
 
@@ -12,13 +12,33 @@ type CvGatePort = {
 
 type ClockPort = {
   start?(): void;
-  step?(stepIndex: number): void; //4ppq
+  processTickRange?(tickFrom: number, tickTo: number): void; //480ppq based tick from song start
+  step?(stepIndex: number): void; //4ppq step from song start
   stop?(): void;
 };
 
 type StatePort = {
-  emitState(): Record<string, any>;
-  applyState(state: Record<string, any>): void;
+  emitState?(): Record<string, any> | undefined;
+  applyState?(state: Record<string, any>): void;
+  emitStateBytes?(): Uint8Array | undefined;
+  applyStateBytes?(bytes: Uint8Array): void;
+};
+
+type ParameterSpec = {
+  id: string;
+  steps: number; //2 for on/off, 3 for low/medium/high, etc
+  //all parameters are ranged in 0~1
+};
+
+type ParametersPort = {
+  getParameterSpecs(): ParameterSpec[];
+  getParameterValue(id: string): number;
+  setParameterValue(id: string, value: number): void;
+};
+
+type SamplerPadPort = {
+  getToneIds(): string[];
+  playTone(toneId: string): void;
 };
 
 type AudioPort = {
@@ -31,6 +51,8 @@ export type UnitInputPort = {
   cvGateInput?: CvGatePort;
   clockInput?: ClockPort;
   stateInput?: StatePort;
+  parametersInput?: ParametersPort;
+  samplerPadInput?: SamplerPadPort;
 };
 
 export type UnitOutputPort = {
@@ -39,6 +61,8 @@ export type UnitOutputPort = {
   cvGateOutput: CvGatePort;
   clockOutput: ClockPort;
   stateOutput: StatePort;
+  parametersOutput: ParametersPort;
+  samplerPadOutput: SamplerPadPort;
 };
 
 export type UnitOutputPortInHostSide = UnitOutputPort & {
@@ -86,6 +110,16 @@ export type UnitInputPortC = {
   }): void;
 };
 
+export type MetaAttributes = {
+  key?: string; //C, Am, ... etc
+};
+
+type HostCallbacks = {
+  setBpm?(bpm: number): void;
+  setPlayState?(playing: boolean): void;
+  setMetaAttributes?(metaAttrs: MetaAttributes): void;
+};
+
 export type UnitInterfaceForIframe = {
   audioContext: AudioContext;
   // defaultOutputNode: AudioNode;
@@ -105,5 +139,6 @@ export type UnitInterfaceForIframe = {
   //   // multiChannelOutputPorts?: UnitOutputPort[];
   //   // multiChannelInputPorts?: UnitInputPortC[];
   // }): void;
+  setHostCallbacks(callbacks: HostCallbacks): void;
   completeSetup(): void;
 };

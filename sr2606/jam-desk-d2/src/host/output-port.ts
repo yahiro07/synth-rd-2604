@@ -31,6 +31,12 @@ export function createOutputPortImpl(
   return {
     connectTo: core.connectTo,
     disconnectFrom: core.disconnectFrom,
+    audioOutput: {
+      get node() {
+        audioRelayNode ??= fnCreateGainNode();
+        return audioRelayNode;
+      },
+    },
     noteOutput: {
       noteOn(note: number) {
         connectedInputPort?.noteInput?.noteOn(note);
@@ -60,16 +66,37 @@ export function createOutputPortImpl(
     },
     stateOutput: {
       emitState() {
-        return connectedInputPort?.stateInput?.emitState() || {};
+        return connectedInputPort?.stateInput?.emitState?.();
       },
       applyState(state: Record<string, any>) {
-        connectedInputPort?.stateInput?.applyState(state);
+        connectedInputPort?.stateInput?.applyState?.(state);
+      },
+      emitStateBytes() {
+        return connectedInputPort?.stateInput?.emitStateBytes?.();
+      },
+      applyStateBytes(bytes: Uint8Array) {
+        connectedInputPort?.stateInput?.applyStateBytes?.(bytes);
       },
     },
-    audioOutput: {
-      get node() {
-        audioRelayNode ??= fnCreateGainNode();
-        return audioRelayNode;
+    parametersOutput: {
+      getParameterSpecs() {
+        return connectedInputPort?.parametersInput?.getParameterSpecs?.() ?? [];
+      },
+      getParameterValue(id: string) {
+        return (
+          connectedInputPort?.parametersInput?.getParameterValue?.(id) ?? 0
+        );
+      },
+      setParameterValue(id: string, value: number) {
+        connectedInputPort?.parametersInput?.setParameterValue?.(id, value);
+      },
+    },
+    samplerPadOutput: {
+      getToneIds() {
+        return connectedInputPort?.samplerPadInput?.getToneIds?.() ?? [];
+      },
+      playTone(toneId: string) {
+        connectedInputPort?.samplerPadInput?.playTone?.(toneId);
       },
     },
   };
