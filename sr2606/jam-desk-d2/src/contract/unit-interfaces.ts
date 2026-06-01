@@ -35,13 +35,11 @@ export type UnitInputPort = {
 export type UnitOutputPort = {
   connectTo(port: UnitInputPort): void;
   disconnectFrom(port: UnitInputPort): void;
-  proxies: {
-    noteOutput: NotePort;
-    cvGateOutput: CvGatePort;
-    clockOutput: ClockPort;
-    switcherOutput: SwitcherPort;
-    audioOutput: AudioPort;
-  };
+  noteOutput: NotePort;
+  cvGateOutput: CvGatePort;
+  clockOutput: ClockPort;
+  switcherOutput: SwitcherPort;
+  audioOutput: AudioPort;
 };
 
 export type UnitInstance = {

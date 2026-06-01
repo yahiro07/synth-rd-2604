@@ -10,7 +10,7 @@ function _expectedUseCase_defineUnitInApp() {
     const outputPort = createOutputPort();
     const myGain = ac.createGain();
     myGain.gain.value = 0.5;
-    myGain.connect(outputPort.proxies.audioOutput.node);
+    myGain.connect(outputPort.audioOutput.node);
     return {
       outputPort,
       inputPort: {
@@ -36,7 +36,7 @@ function _expectedUseCase_defineUnitInApp_MultiPortSupport() {
     const gains = seqNumbers(4).map(() => ac.createGain());
     const outputPorts = gains.map((gain, i) => {
       const outputPort = createOutputPort();
-      gain.connect(outputPort.proxies.audioOutput.node);
+      gain.connect(outputPort.audioOutput.node);
       return outputPort;
     });
     return {

@@ -28,44 +28,42 @@ export function createOutputPortImpl(
   return {
     connectTo: core.connectTo,
     disconnectFrom: core.disconnectFrom,
-    proxies: {
-      noteOutput: {
-        noteOn(note: number) {
-          connectedInputPort?.noteInput?.noteOn(note);
-        },
-        noteOff(note: number) {
-          connectedInputPort?.noteInput?.noteOff(note);
-        },
+    noteOutput: {
+      noteOn(note: number) {
+        connectedInputPort?.noteInput?.noteOn(note);
       },
-      cvGateOutput: {
-        setCv(cv: number) {
-          connectedInputPort?.cvGateInput?.setCv(cv);
-        },
-        setGate(gate: boolean) {
-          connectedInputPort?.cvGateInput?.setGate(gate);
-        },
+      noteOff(note: number) {
+        connectedInputPort?.noteInput?.noteOff(note);
       },
-      clockOutput: {
-        reset() {
-          connectedInputPort?.clockInput?.reset();
-        },
-        onStep(fn: () => void) {
-          connectedInputPort?.clockInput?.onStep(fn);
-        },
+    },
+    cvGateOutput: {
+      setCv(cv: number) {
+        connectedInputPort?.cvGateInput?.setCv(cv);
       },
-      switcherOutput: {
-        emitState() {
-          return connectedInputPort?.switcherInput?.emitState() || {};
-        },
-        applyState(state: Record<string, any>) {
-          connectedInputPort?.switcherInput?.applyState(state);
-        },
+      setGate(gate: boolean) {
+        connectedInputPort?.cvGateInput?.setGate(gate);
       },
-      audioOutput: {
-        get node() {
-          audioRelayNode ??= fnCreateGainNode();
-          return audioRelayNode;
-        },
+    },
+    clockOutput: {
+      reset() {
+        connectedInputPort?.clockInput?.reset();
+      },
+      onStep(fn: () => void) {
+        connectedInputPort?.clockInput?.onStep(fn);
+      },
+    },
+    switcherOutput: {
+      emitState() {
+        return connectedInputPort?.switcherInput?.emitState() || {};
+      },
+      applyState(state: Record<string, any>) {
+        connectedInputPort?.switcherInput?.applyState(state);
+      },
+    },
+    audioOutput: {
+      get node() {
+        audioRelayNode ??= fnCreateGainNode();
+        return audioRelayNode;
       },
     },
   };

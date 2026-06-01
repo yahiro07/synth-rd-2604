@@ -20,11 +20,12 @@ export const UnitFrame = ({
 
   useEffect(() => {
     if (destUnitId) {
-      const destUnit = hostSystem.getUnitInstance(destUnitId);
-      if (destUnit) {
-        unit.outputPort.connectTo(destUnit.inputPort);
+      const destPort = hostSystem.getConnectionTargetPort(destUnitId);
+      if (destPort) {
+        console.log(`Connecting ${unit.unitId} --> ${destUnitId}`);
+        unit.outputPort.connectTo(destPort);
         return () => {
-          unit.outputPort.disconnectFrom(destUnit.inputPort);
+          unit.outputPort.disconnectFrom(destPort);
         };
       }
     }

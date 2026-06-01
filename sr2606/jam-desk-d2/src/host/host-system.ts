@@ -21,13 +21,13 @@ function createHostSystem() {
     ): UnitInstanceInHostSide {
       const factory = unitFactories[unitClassKey];
       const unit = { ...factory(), unitId };
-      units[unitClassKey] = unit;
+      units[unitId] = unit;
       return unit;
     },
     getUnitInstance(unitId: string) {
       return units[unitId];
     },
-    getConnectionTargetNode(destUnitId: string): UnitInputPort {
+    getConnectionTargetPort(destUnitId: string): UnitInputPort {
       if (destUnitId === "$output") {
         return audioDestinationUnitInputPort;
       }
