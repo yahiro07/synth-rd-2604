@@ -60,6 +60,10 @@ export type UnitInstance = {
   render(): ReactNode;
 };
 
+export type UnitInstanceInHostSide = UnitInstance & {
+  unitId: string;
+};
+
 type OutputPortCreator = () => UnitOutputPort;
 
 export type UnitClassFn = (
