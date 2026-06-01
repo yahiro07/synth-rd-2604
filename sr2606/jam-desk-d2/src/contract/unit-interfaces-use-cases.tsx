@@ -1,7 +1,7 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import {
-  HostInterfaceForIframe,
   HostInterfaceForReact,
+  UnitInterfaceForIframe,
 } from "@/contract/unit-interfaces";
 
 function _expectedUseCase_defineUnitInApp() {
@@ -56,15 +56,17 @@ function _expectedUseCase_defineUnitInApp_MultiPortSupport() {
 }
 
 function _expectedUseCase_defineUnitInIframe_Synthesizer() {
-  let hostInterface: HostInterfaceForIframe | undefined;
-  const ac = hostInterface?.audioContext ?? new AudioContext();
+  const unitInterface = (window as any).unitInterface as
+    | UnitInterfaceForIframe
+    | undefined;
+  const ac = unitInterface?.audioContext ?? new AudioContext();
   const destNode =
-    hostInterface?.primaryOutputPort.audioOutput.node ?? ac.destination;
+    unitInterface?.primaryOutputPort.audioOutput.node ?? ac.destination;
   const myGain = ac.createGain();
   myGain.gain.value = 0.5;
   myGain.connect(destNode);
 
-  hostInterface?.primaryInputPort.setHandlers({
+  unitInterface?.primaryInputPort.setHandlers({
     noteInput: {
       noteOn(note) {
         console.log("note on", note);
@@ -76,29 +78,33 @@ function _expectedUseCase_defineUnitInIframe_Synthesizer() {
       },
     },
   });
-  hostInterface?.registerUnit({});
+  unitInterface?.completeSetup();
   //render apps in iframe DOM
 }
 
 function _expectedUseCase_defineUnitInIframe_Effect() {
-  let hostInterface: HostInterfaceForIframe | undefined;
-  const ac = hostInterface?.audioContext ?? new AudioContext();
-  const inputNode = hostInterface?.primaryInputPort.audioInput?.node;
+  const unitInterface = (window as any).unitInterface as
+    | UnitInterfaceForIframe
+    | undefined;
+  const ac = unitInterface?.audioContext ?? new AudioContext();
+  const inputNode = unitInterface?.primaryInputPort.audioInput?.node;
   const destNode =
-    hostInterface?.primaryOutputPort.audioOutput.node ?? ac.destination;
+    unitInterface?.primaryOutputPort.audioOutput.node ?? ac.destination;
   const myGain = ac.createGain();
   myGain.gain.value = 0.5;
   inputNode?.connect(myGain); //disconnected by host on unloading page
   myGain.connect(destNode);
 
-  hostInterface?.registerUnit({});
+  unitInterface?.completeSetup();
   //render apps in iframe DOM
 }
 
 function _expectedUseCase_defineUnitInIframe_Sequencer() {
-  let hostInterface: HostInterfaceForIframe | undefined;
-  const noteOutputPort = hostInterface?.primaryOutputPort.noteOutput;
-  hostInterface?.primaryInputPort.setHandlers({
+  const unitInterface = (window as any).unitInterface as
+    | UnitInterfaceForIframe
+    | undefined;
+  const noteOutputPort = unitInterface?.primaryOutputPort.noteOutput;
+  unitInterface?.primaryInputPort.setHandlers({
     clockInput: {
       start() {},
       step(_stepIndex: number) {
@@ -112,21 +118,21 @@ function _expectedUseCase_defineUnitInIframe_Sequencer() {
       },
     },
   });
-  hostInterface?.registerUnit({});
+  unitInterface?.completeSetup();
   //render apps in iframe DOM
 }
 
 function _expectedUseCase_defineUnitInIframe_Mixer() {
-  let hostInterface: HostInterfaceForIframe | undefined;
-  if (!hostInterface) {
+  const unitInterface = (window as any).unitInterface as
+    | UnitInterfaceForIframe
+    | undefined;
+  if (!unitInterface) {
     return;
   }
-  const ac = hostInterface.audioContext ?? new AudioContext();
+  const ac = unitInterface.audioContext ?? new AudioContext();
   const destNode =
-    hostInterface.primaryOutputPort.audioOutput.node ?? ac.destination;
-  const inputPorts = seqNumbers(4).map(() =>
-    hostInterface.addMultiChannelInputPort(),
-  );
+    unitInterface.primaryOutputPort.audioOutput.node ?? ac.destination;
+  const inputPorts = unitInterface.createMultiChannelInputPorts(4);
   const mixerGainNodes = seqNumbers(4).map((i) => {
     const inputNode = inputPorts[i].audioInput.node;
     const gainNode = ac.createGain();
@@ -135,30 +141,33 @@ function _expectedUseCase_defineUnitInIframe_Mixer() {
     gainNode.connect(destNode);
     return gainNode;
   });
-  hostInterface?.registerUnit({});
+  unitInterface?.completeSetup();
   //render apps in iframe DOM, control gains of each channel
 }
 
 function _expectedUseCase_defineUnitInIframe_MultiOutputSequencer() {
-  let hostInterface: HostInterfaceForIframe | undefined;
-  const outputPorts = hostInterface
-    ? seqNumbers(4).map(() => hostInterface.addMultiChannelOutputPort())
-    : undefined;
+  const unitInterface = (window as any).unitInterface as
+    | UnitInterfaceForIframe
+    | undefined;
+  const outputPorts = unitInterface?.createMultiChannelOutputPorts(4);
   const core = {
-    onStep(stepIndex: number) {
+    step(stepIndex: number) {
       const ch = stepIndex % 4;
       outputPorts?.[ch]?.noteOutput.noteOn(60);
       setTimeout(() => {
         outputPorts?.[ch]?.noteOutput.noteOff(60);
       }, 100);
     },
-  };
-  hostInterface?.primaryInputPort.setHandlers({
-    clockInput: {
-      step: core.onStep,
+    stop() {
+      outputPorts?.forEach((port) => {
+        port.noteOutput.noteOff(60);
+      });
     },
+  };
+  unitInterface?.primaryInputPort.setHandlers({
+    clockInput: { step: core.step, stop: core.stop },
   });
-  hostInterface?.registerUnit({});
+  unitInterface?.completeSetup();
   //render apps in iframe DOM
 }
 

@@ -86,8 +86,7 @@ export type UnitInputPortC = {
   }): void;
 };
 
-export type HostInterfaceForIframe = {
-  // raw: HostInterfaceRaw;
+export type UnitInterfaceForIframe = {
   audioContext: AudioContext;
   // defaultOutputNode: AudioNode;
   // defaultInputNode: AudioNode;
@@ -95,15 +94,16 @@ export type HostInterfaceForIframe = {
   // audioSourceNode: AudioNode;
   primaryOutputPort: UnitOutputPort;
   primaryInputPort: UnitInputPortC;
-  addMultiChannelOutputPort(): UnitOutputPort;
-  addMultiChannelInputPort(): UnitInputPortC;
+  createMultiChannelOutputPorts(numChannels: number): UnitOutputPort[];
+  createMultiChannelInputPorts(numChannels: number): UnitInputPortC[];
   // outputPort: UnitOutputPort & { channels(index: number): UnitOutputPort };
   // inputPort: UnitInputPortC & { channels(index: number): UnitInputPortC };
   // completeUnitRegistration(): void;
-  registerUnit(args: {
-    // outputPort?: UnitOutputPort;
-    // inputPort?: UnitInputPort;
-    // multiChannelOutputPorts?: UnitOutputPort[];
-    // multiChannelInputPorts?: UnitInputPortC[];
-  }): void;
+  // registerUnit(args: {
+  //   // outputPort?: UnitOutputPort;
+  //   // inputPort?: UnitInputPort;
+  //   // multiChannelOutputPorts?: UnitOutputPort[];
+  //   // multiChannelInputPorts?: UnitInputPortC[];
+  // }): void;
+  completeSetup(): void;
 };

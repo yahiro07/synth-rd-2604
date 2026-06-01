@@ -48,16 +48,22 @@ export function createOutputPortImpl(
       },
     },
     clockOutput: {
-      onStep(stepIndex: number) {
-        connectedInputPort?.clockInput?.onStep(stepIndex);
+      start() {
+        connectedInputPort?.clockInput?.start?.();
+      },
+      step(stepIndex: number) {
+        connectedInputPort?.clockInput?.step?.(stepIndex);
+      },
+      stop() {
+        connectedInputPort?.clockInput?.stop?.();
       },
     },
-    switcherOutput: {
+    stateOutput: {
       emitState() {
-        return connectedInputPort?.switcherInput?.emitState() || {};
+        return connectedInputPort?.stateInput?.emitState() || {};
       },
       applyState(state: Record<string, any>) {
-        connectedInputPort?.switcherInput?.applyState(state);
+        connectedInputPort?.stateInput?.applyState(state);
       },
     },
     audioOutput: {
