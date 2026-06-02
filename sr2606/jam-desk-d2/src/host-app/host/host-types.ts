@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
 import {
   AudioPort,
+  AutomationPort,
   ClockPort,
   CvGatePort,
   HostCallbacks,
   NotePort,
-  ParametersPort,
   SamplerPadPort,
   StatePort,
   SubPortType,
@@ -18,7 +18,7 @@ export type HsUnitInputPortPreHandlers = {
   cvGateInput?: CvGatePort;
   clockInput?: ClockPort;
   stateInput?: StatePort;
-  parametersInput?: ParametersPort;
+  automationInput?: AutomationPort;
   samplerPadInput?: SamplerPadPort;
 };
 
@@ -36,7 +36,7 @@ export type HsUnitInputPort = {
   cvGateInput?: CvGatePort;
   clockInput?: ClockPort;
   stateInput?: StatePort;
-  parametersInput?: ParametersPort;
+  automationInput?: AutomationPort;
   samplerPadInput?: SamplerPadPort;
   callbacks?: HsUnitInputPortCallbacks;
   getSubPortTypes?: (hasAudioOutput: boolean) => SubPortType[];

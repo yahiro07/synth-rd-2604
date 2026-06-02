@@ -92,7 +92,7 @@ function createAdapterInputPort(): HsUnitInputPort & {
       mountedPort.cvGateInput ? "cvGate" : undefined,
       mountedPort.clockInput ? "clock" : undefined,
       mountedPort.stateInput ? "state" : undefined,
-      mountedPort.parametersInput ? "parameters" : undefined,
+      mountedPort.automationInput ? "automation" : undefined,
       mountedPort.samplerPadInput ? "samplerPad" : undefined,
     ].filter((type): type is SubPortType => !!type);
   };
@@ -150,15 +150,15 @@ function createAdapterInputPort(): HsUnitInputPort & {
         mountedPort?.stateInput?.applyStateBytes?.(bytes);
       },
     },
-    parametersInput: {
+    automationInput: {
       getParameterSpecs() {
-        return mountedPort?.parametersInput?.getParameterSpecs?.() ?? [];
+        return mountedPort?.automationInput?.getParameterSpecs?.() ?? [];
       },
       getParameter(id) {
-        return mountedPort?.parametersInput?.getParameter?.(id) ?? 0;
+        return mountedPort?.automationInput?.getParameter?.(id) ?? 0;
       },
       setParameter(id, value) {
-        mountedPort?.parametersInput?.setParameter?.(id, value);
+        mountedPort?.automationInput?.setParameter?.(id, value);
       },
     },
     samplerPadInput: {

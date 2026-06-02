@@ -4,7 +4,7 @@ export type SubPortType =
   | "cvGate"
   | "clock"
   | "state"
-  | "parameters"
+  | "automation"
   | "samplerPad";
 
 export type NotePort = {
@@ -37,7 +37,7 @@ export type ParameterSpec = {
   //all parameters are ranged in 0~1
 };
 
-export type ParametersPort = {
+export type AutomationPort = {
   getParameterSpecs(): ParameterSpec[];
   getParameter(id: string): number;
   setParameter(id: string, value: number): void;
@@ -62,7 +62,7 @@ export type UnitOutputPort = {
   cvGateOutput: CvGatePort;
   clockOutput: ClockPort;
   stateOutput: StatePort;
-  parametersOutput: ParametersPort;
+  automationOutput: AutomationPort;
   samplerPadOutput: SamplerPadPort;
 };
 
@@ -77,7 +77,7 @@ export type UnitInputPort = {
     cvGateInput?: CvGatePort;
     clockInput?: ClockPort;
     stateInput?: StatePort;
-    parametersInput?: ParametersPort;
+    automationInput?: AutomationPort;
     samplerPadInput?: SamplerPadPort;
   }): void;
 };

@@ -32,11 +32,11 @@ export const createParametersControllerUnit: ReactUnitTemplateFn = (
 
   const actions = {
     loadParameters() {
-      const parameterSpecs = outputPort.parametersOutput.getParameterSpecs();
+      const parameterSpecs = outputPort.automationOutput.getParameterSpecs();
       const parameterValues = Object.fromEntries(
         parameterSpecs.map((spec) => [
           spec.id,
-          outputPort.parametersOutput.getParameter(spec.id),
+          outputPort.automationOutput.getParameter(spec.id),
         ]),
       );
       store.assigns({
@@ -53,7 +53,7 @@ export const createParametersControllerUnit: ReactUnitTemplateFn = (
       });
     },
     setParameter(id: string, value: number) {
-      outputPort.parametersOutput.setParameter(id, value);
+      outputPort.automationOutput.setParameter(id, value);
       store.assigns({
         parameterValues: {
           ...store.state.parameterValues,
@@ -65,7 +65,7 @@ export const createParametersControllerUnit: ReactUnitTemplateFn = (
 
   outputPort.setCallbacks({
     onConnectedTo(subPortTypes) {
-      if (subPortTypes.includes("parameters")) {
+      if (subPortTypes.includes("automation")) {
         actions.loadParameters();
       } else {
         actions.clearParameters();

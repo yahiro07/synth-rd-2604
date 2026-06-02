@@ -14,7 +14,7 @@ function getConnectedSubPortTypes(
     port.cvGateInput ? "cvGate" : undefined,
     port.clockInput ? "clock" : undefined,
     port.stateInput ? "state" : undefined,
-    port.parametersInput ? "parameters" : undefined,
+    port.automationInput ? "automation" : undefined,
     port.samplerPadInput ? "samplerPad" : undefined,
   ].filter((type): type is SubPortType => !!type);
 }
@@ -114,15 +114,15 @@ export function createHsUnitOutputPortImpl(
         connectedInputPort?.stateInput?.applyStateBytes?.(bytes);
       },
     },
-    parametersOutput: {
+    automationOutput: {
       getParameterSpecs() {
-        return connectedInputPort?.parametersInput?.getParameterSpecs?.() ?? [];
+        return connectedInputPort?.automationInput?.getParameterSpecs?.() ?? [];
       },
       getParameter(id: string) {
-        return connectedInputPort?.parametersInput?.getParameter?.(id) ?? 0;
+        return connectedInputPort?.automationInput?.getParameter?.(id) ?? 0;
       },
       setParameter(id: string, value: number) {
-        connectedInputPort?.parametersInput?.setParameter?.(id, value);
+        connectedInputPort?.automationInput?.setParameter?.(id, value);
       },
     },
     samplerPadOutput: {

@@ -33,7 +33,7 @@ export const createOscUnit: ReactUnitTemplateFn = (unitInterface) => {
       noteOn: oscillatorCore.noteOn,
       noteOff: oscillatorCore.noteOff,
     },
-    parametersInput: {
+    automationInput: {
       getParameterSpecs() {
         return [
           { id: "wave", steps: 4 },
