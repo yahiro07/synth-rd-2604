@@ -1,3 +1,4 @@
+import { createCvGateOscUnit } from "@/units/react/cv-gate-osc";
 import { createKeyboardUnit } from "@/units/react/keyboard";
 import { createMixerUnit } from "@/units/react/mixer";
 import { createOscUnit } from "@/units/react/oscillator";
@@ -10,6 +11,7 @@ export const reactUnitFactories = {
   keyboard: createKeyboardUnit,
   mixer: createMixerUnit,
   twoPortsKeyboard: createTwoPortsKeyboardUnit,
-  parameterController: createParametersControllerUnit,
+  parametersController: createParametersControllerUnit,
   stateSwitcher: createStateSwitcherUnit,
+  cvGateOsc: createCvGateOscUnit,
 };

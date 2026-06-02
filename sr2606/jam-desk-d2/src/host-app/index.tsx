@@ -27,9 +27,9 @@ const App = () => {
           destSpec="mixer1.port1"
         />
         <ReactUnitFrame
-          unitId="stateSwitcher1"
-          unitTemplateFn={uf.stateSwitcher}
-          destSpec="osc2"
+          unitId="cvGateOsc1"
+          unitTemplateFn={uf.cvGateOsc}
+          destSpec="mixer1.port2"
         />
       </div>
       <div className="flex-h gap-4">
@@ -43,6 +43,16 @@ const App = () => {
           unitTemplateFn={uf.keyboard}
           destSpec="osc2"
         />
+        <ReactUnitFrame
+          unitId="keyboard3"
+          unitTemplateFn={uf.keyboard}
+          destSpec="cvGateOsc1"
+        />
+        <ReactUnitFrame
+          unitId="stateSwitcher1"
+          unitTemplateFn={uf.stateSwitcher}
+          destSpec="osc2"
+        />
       </div>
 
       <div className="flex-h gap-4">
@@ -53,7 +63,7 @@ const App = () => {
         />
         <ReactUnitFrame
           unitId="paramController1"
-          unitTemplateFn={uf.parameterController}
+          unitTemplateFn={uf.parametersController}
           destSpec="osc2"
         />
       </div>
