@@ -86,6 +86,8 @@ function createTwoPortsKeyboardUnit(): UnitInstance {
     },
   };
   return {
+    outputPort: outputPorts[0],
+    inputPort: {},
     outputPorts,
     RenderUi() {
       return (
@@ -154,6 +156,7 @@ function createMixerUnit(): UnitInstance {
 
   return {
     outputPort,
+    inputPort: {},
     inputPorts,
     RenderUi() {
       const { levels } = store.useSnapshot();

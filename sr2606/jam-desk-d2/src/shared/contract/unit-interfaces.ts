@@ -81,8 +81,8 @@ export type HostCallbacks = {
 };
 
 export type UnitInstance = {
-  outputPort?: UnitOutputPort;
-  inputPort?: UnitInputPort;
+  outputPort: UnitOutputPort;
+  inputPort: UnitInputPort;
   outputPorts?: UnitOutputPort[];
   inputPorts?: UnitInputPort[];
   hostCallbacks?: HostCallbacks;
