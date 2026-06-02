@@ -1,7 +1,23 @@
-import "../../page.css";
-import "beams/ax-ui/utility-classes.css";
-//
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
+import { createOscillatorUnitCore } from "@/host-app/react-units/oscillator-unit-core";
+import { UnitInterfaceForIframe } from "@/shared/contract/unit-interfaces";
+
+const unitInterface = (window as any).unitInterface as
+  | UnitInterfaceForIframe
+  | undefined;
+const audioContext = unitInterface?.audioContext ?? new AudioContext();
+const destNode =
+  unitInterface?.primaryOutputPort.audioOutput.node ?? audioContext.destination;
+
+const oscillatorCore = createOscillatorUnitCore(audioContext, destNode);
+
+unitInterface?.primaryInputPort.setHandlers({
+  noteInput: {
+    noteOn: oscillatorCore.noteOn,
+    noteOff: oscillatorCore.noteOff,
+  },
+});
+unitInterface?.completeSetup();
 
 const App = () => {
   return (
