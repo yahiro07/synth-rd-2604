@@ -13,14 +13,14 @@
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "useIterableCallbackReturn": "off"
       },
       "complexity": {
         "noUselessSwitchCase": "off"
       },
       "correctness": {
-        "noConstantCondition": "off",
-        "useExhaustiveDependencies": "off"
+        "noConstantCondition": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",

@@ -1,6 +1,7 @@
 export function createOscillatorUnitCore(
   audioContext: AudioContext,
   destinationNode: AudioNode,
+  oscillatorType: OscillatorType = "sawtooth",
 ) {
   function midiToFrequency(midiNote: number): number {
     return 440 * 2 ** ((midiNote - 69) / 12);
@@ -13,7 +14,7 @@ export function createOscillatorUnitCore(
       const freq = midiToFrequency(noteNumber);
       const oscillatorNode = audioContext.createOscillator();
       oscillatorNode.frequency.setValueAtTime(freq, audioContext.currentTime);
-      oscillatorNode.type = "sawtooth";
+      oscillatorNode.type = oscillatorType;
       oscillatorNode.connect(destinationNode);
       oscillatorNode.start();
       oscNodes[noteNumber] = oscillatorNode;

@@ -9,7 +9,11 @@ const audioContext = unitInterface?.audioContext ?? new AudioContext();
 const destNode =
   unitInterface?.primaryOutputPort.audioOutput.node ?? audioContext.destination;
 
-const oscillatorCore = createOscillatorUnitCore(audioContext, destNode);
+const oscillatorCore = createOscillatorUnitCore(
+  audioContext,
+  destNode,
+  "square",
+);
 
 unitInterface?.primaryInputPort.setHandlers({
   noteInput: {

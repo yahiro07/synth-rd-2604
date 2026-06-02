@@ -31,6 +31,14 @@ function createHostSystem() {
     getUnitInstance(unitId: string) {
       return units[unitId];
     },
+    registerUnitInstance(unit: UnitInstanceInHostSide) {
+      units[unit.unitId] = unit;
+      return () => {
+        if (units[unit.unitId] === unit) {
+          delete units[unit.unitId];
+        }
+      };
+    },
     getConnectionTargetPort(destSpec: string): UnitInputPort | undefined {
       if (destSpec === "$output") {
         return audioDestinationUnitInputPort;
