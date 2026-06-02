@@ -72,10 +72,10 @@ export type UnitOutputPortInHostSide = UnitOutputPort & {
 
 export type UnitInstance = {
   outputPort: UnitOutputPort;
-  inputPort: UnitInputPort;
+  inputPort?: UnitInputPort;
   outputPorts?: UnitOutputPort[];
   inputPorts?: UnitInputPort[];
-  render(): ReactNode;
+  RenderUi: () => ReactNode;
 };
 
 export type UnitInstanceInHostSide = {
@@ -85,7 +85,7 @@ export type UnitInstanceInHostSide = {
   inputPort: UnitInputPort;
   outputPorts?: UnitOutputPort[];
   inputPorts?: UnitInputPort[];
-  render(): ReactNode;
+  RenderUi: () => ReactNode;
 };
 
 type OutputPortCreator = () => UnitOutputPortInHostSide;

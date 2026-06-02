@@ -1,3 +1,6 @@
+import { seqNumbers } from "beams/ax/array-utils";
+import { createStore } from "snap-store";
+import { Knob } from "@/components/knob";
 import { UnitInstance } from "@/contract/unit-interfaces";
 import { createOutputPort, gAudioContext } from "@/host/host-core";
 
@@ -41,7 +44,7 @@ function createOscUnit(): UnitInstance {
         noteOff: core.noteOff,
       },
     },
-    render() {
+    RenderUi() {
       return (
         <div className="bg-gray-200 w-[200px] h-[100px] flex-c">
           Oscillator Unit
@@ -68,7 +71,7 @@ function createKeyboardUnit(): UnitInstance {
   return {
     outputPort,
     inputPort: {},
-    render() {
+    RenderUi() {
       return (
         <div className="bg-gray-200 w-[200px] h-[100px] flex-c gap-2">
           <button
@@ -93,9 +96,61 @@ function createKeyboardUnit(): UnitInstance {
   };
 }
 
+function createMixerUnit(): UnitInstance {
+  const audioContext = gAudioContext;
+  const outputPort = createOutputPort();
+  const destinationNode = outputPort.audioOutput.node;
+
+  const gainNodes = seqNumbers(4).map(() => audioContext.createGain());
+
+  const store = createStore({
+    levels: gainNodes.map(() => 0.5),
+  });
+
+  const inputPorts = gainNodes.map((gainNode) => {
+    gainNode.connect(destinationNode);
+    return { audioInput: { node: gainNode } };
+  });
+
+  const actions = {
+    setLevel(ch: number, level: number) {
+      store.setLevels((prev) => prev.map((l, i) => (i === ch ? level : l)));
+      const gainNode = gainNodes[ch];
+      if (gainNode) {
+        gainNode.gain.linearRampToValueAtTime(
+          level,
+          audioContext.currentTime + 0.01,
+        );
+      }
+    },
+  };
+
+  return {
+    outputPort,
+    inputPorts,
+    RenderUi() {
+      const { levels } = store.useSnapshot();
+      return (
+        <div className="bg-gray-200 w-[200px] h-[100px] flex-c gap-3">
+          {seqNumbers(4).map((ch) => (
+            <div key={ch} className="flex-vc gap-1">
+              <span>ch{ch + 1}</span>
+              <Knob
+                value={levels[ch]}
+                onChange={(value) => actions.setLevel(ch, value)}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    },
+  };
+}
+
 export const unitFactories = {
   osc: createOscUnit,
   keyboard: createKeyboardUnit,
+  mixer: createMixerUnit,
 };
 
 export type UnitClassKey = keyof typeof unitFactories;

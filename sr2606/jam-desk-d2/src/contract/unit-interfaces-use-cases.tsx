@@ -23,7 +23,7 @@ function _expectedUseCase_defineUnitInApp() {
           },
         },
       },
-      render() {
+      RenderUi() {
         return <div>My Unit</div>;
       },
     };
@@ -43,7 +43,7 @@ function _expectedUseCase_defineUnitInApp_MultiPortSupport() {
       outputPort: outputPorts[0],
       multiChannelOutputs: outputPorts,
       inputPort: {},
-      render() {
+      RenderUi() {
         return (
           <div>
             My Unit

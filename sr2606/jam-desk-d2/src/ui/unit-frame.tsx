@@ -7,11 +7,11 @@ import { UnitClassKey } from "@/units/units";
 export const UnitFrame = ({
   unitId,
   unitClassKey,
-  destUnitId,
+  destSpec,
 }: {
   unitId: string;
   unitClassKey: UnitClassKey;
-  destUnitId?: string;
+  destSpec?: string;
 }) => {
   const unit = useMemo(
     () => hostSystem.createUnitInstance(unitClassKey, unitId),
@@ -19,17 +19,22 @@ export const UnitFrame = ({
   );
 
   useEffect(() => {
-    if (destUnitId) {
-      const destPort = hostSystem.getConnectionTargetPort(destUnitId);
+    if (destSpec) {
+      const destPort = hostSystem.getConnectionTargetPort(destSpec);
       if (destPort) {
-        console.log(`Connecting ${unit.unitId} --> ${destUnitId}`);
+        console.log(`connecting ${unit.unitId} --> ${destSpec}`);
         unit.outputPort.connectTo(destPort);
         return () => {
+          console.log(`disconnecting ${unit.unitId} --> ${destSpec}`);
           unit.outputPort.disconnectFrom(destPort);
         };
       }
     }
-  }, [destUnitId, unit]);
+  }, [destSpec, unit]);
 
-  return <div>{unit.render()}</div>;
+  return (
+    <div>
+      <unit.RenderUi />
+    </div>
+  );
 };

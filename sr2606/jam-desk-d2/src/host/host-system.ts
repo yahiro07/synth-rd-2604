@@ -20,18 +20,22 @@ function createHostSystem() {
       unitId: string,
     ): UnitInstanceInHostSide {
       const factory = unitFactories[unitClassKey];
-      const unit = { ...factory(), unitId } as UnitInstanceInHostSide;
+      const tmpUnit = factory();
+      const unit = {
+        ...tmpUnit,
+        unitId,
+      } as UnitInstanceInHostSide;
       units[unitId] = unit;
       return unit;
     },
     getUnitInstance(unitId: string) {
       return units[unitId];
     },
-    getConnectionTargetPort(destUnitId: string): UnitInputPort {
+    getConnectionTargetPort(destUnitId: string): UnitInputPort | undefined {
       if (destUnitId === "$output") {
         return audioDestinationUnitInputPort;
       }
-      return units[destUnitId].inputPort;
+      return units[destUnitId]?.inputPort;
     },
   };
 }
