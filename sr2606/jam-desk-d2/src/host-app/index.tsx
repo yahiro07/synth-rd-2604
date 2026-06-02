@@ -4,7 +4,7 @@ import "beams/ax-ui/utility-classes.css";
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
 import { ReactUnitFrame } from "@/host-app/unit-frame/react-unit-frame";
 import { UnitFrame } from "@/host-app/unit-frame/unit-frame";
-import { reactUnitFactories } from "@/units/react/units";
+import { reactUnitFactories } from "@/units/react";
 
 const App = () => {
   const uf = reactUnitFactories;
