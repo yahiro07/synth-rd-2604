@@ -1,47 +1,22 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import { createStore } from "snap-store";
 import { createOutputPort, gAudioContext } from "@/host-app/host/host-core";
+import { createOscillatorUnitCore } from "@/host-app/react-units/oscillator-unit-core";
 import { Knob } from "@/shared/components/knob";
 import { UnitInstance } from "@/shared/contract/unit-interfaces";
 
 function createOscUnit(): UnitInstance {
-  const audioContext = gAudioContext;
   const outputPort = createOutputPort();
-  const destinationNode = outputPort.audioOutput.node;
-
-  function midiToFrequency(midiNote: number): number {
-    return 440 * 2 ** ((midiNote - 69) / 12);
-  }
-  const oscNodes: Record<number, OscillatorNode> = {};
-
-  const core = {
-    noteOn(noteNumber: number) {
-      console.log("note on", noteNumber);
-      const freq = midiToFrequency(noteNumber);
-      const oscillatorNode = audioContext.createOscillator();
-      oscillatorNode.frequency.setValueAtTime(freq, audioContext.currentTime);
-      oscillatorNode.type = "sawtooth";
-      oscillatorNode.connect(destinationNode);
-      oscillatorNode.start();
-      oscNodes[noteNumber] = oscillatorNode;
-    },
-    noteOff(noteNumber: number) {
-      const oscillatorNode = oscNodes[noteNumber];
-      if (oscillatorNode) {
-        oscillatorNode.stop();
-        if (oscNodes[noteNumber]) {
-          delete oscNodes[noteNumber];
-        }
-      }
-    },
-  };
-
+  const oscillatorCore = createOscillatorUnitCore(
+    gAudioContext,
+    outputPort.audioOutput.node,
+  );
   return {
     outputPort,
     inputPort: {
       noteInput: {
-        noteOn: core.noteOn,
-        noteOff: core.noteOff,
+        noteOn: oscillatorCore.noteOn,
+        noteOff: oscillatorCore.noteOff,
       },
     },
     RenderUi() {
