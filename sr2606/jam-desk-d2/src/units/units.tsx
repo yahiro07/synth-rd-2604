@@ -112,16 +112,27 @@ function createMixerUnit(): UnitInstance {
     return { audioInput: { node: gainNode } };
   });
 
-  const actions = {
-    setLevel(ch: number, level: number) {
-      store.setLevels((prev) => prev.map((l, i) => (i === ch ? level : l)));
+  const actionsInternal = {
+    affectLevelToGain(ch: number, level: number) {
       const gainNode = gainNodes[ch];
       if (gainNode) {
+        const gain = level ** 2 * 2;
         gainNode.gain.linearRampToValueAtTime(
-          level,
+          gain,
           audioContext.currentTime + 0.01,
         );
       }
+    },
+  };
+  seqNumbers(4).forEach((ch) => {
+    const level = store.state.levels[ch];
+    actionsInternal.affectLevelToGain(ch, level);
+  });
+
+  const actions = {
+    setLevel(ch: number, level: number) {
+      store.setLevels((prev) => prev.map((l, i) => (i === ch ? level : l)));
+      actionsInternal.affectLevelToGain(ch, level);
     },
   };
 
