@@ -2,23 +2,29 @@
 
 import { useEffect, useMemo } from "react";
 import { hostSystem } from "@/host-app/host/host-system";
-import { UnitClassKey } from "@/host-app/react-units/units";
+import {
+  instantiateReactUnit,
+  ReactUnitTemplateFn,
+} from "@/host-app/react-units/react-unit-interface";
 import { connectUnitToDestination } from "@/host-app/ui/unit-connecter";
 import { UnitIdsBox } from "@/host-app/ui/unit-ids-box";
 
 export const ReactUnitFrame = ({
   unitId,
-  unitClassKey,
+  unitTemplateFn,
   destSpec,
 }: {
   unitId: string;
-  unitClassKey: UnitClassKey;
+  unitTemplateFn: ReactUnitTemplateFn;
   destSpec?: string | string[];
 }) => {
   const unit = useMemo(
-    () => hostSystem.createUnitInstance(unitClassKey, unitId),
-    [unitClassKey, unitId],
+    () => instantiateReactUnit(unitTemplateFn, unitId),
+    [unitTemplateFn, unitId],
   );
+  useEffect(() => {
+    return hostSystem.registerUnitInstance(unit);
+  }, [unit]);
 
   useEffect(() => {
     if (destSpec) {

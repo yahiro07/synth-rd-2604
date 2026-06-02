@@ -1,22 +1,18 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import { createStore } from "snap-store";
-import {
-  createHsUnitOutputPort,
-  gAudioContext,
-} from "@/host-app/host/host-core";
-import { HsUnitInstance } from "@/host-app/host/host-types";
+import { gAudioContext } from "@/host-app/host/host-core";
 import {
   createOscillatorUnitCore,
   OscParameters,
 } from "@/host-app/react-units/oscillator-unit-core";
+import { ReactUnitTemplateFn } from "@/host-app/react-units/react-unit-interface";
 import { Knob } from "@/shared/components/knob";
 import { UpperLabel } from "@/shared/components/upper-label";
 
-function createOscUnit(): HsUnitInstance {
-  const outputPort = createHsUnitOutputPort();
+const createOscUnit: ReactUnitTemplateFn = (unitInterface) => {
   const oscillatorCore = createOscillatorUnitCore(
-    gAudioContext,
-    outputPort.audioOutput.node,
+    unitInterface.audioContext,
+    unitInterface.primaryOutputPort.audioOutput.node,
   );
   const store = createStore<OscParameters>({
     wave: 0,
@@ -34,29 +30,28 @@ function createOscUnit(): HsUnitInstance {
       oscillatorCore.setParameter("volume", attrs.volume);
     }
   });
-  return {
-    outputPort,
-    inputPort: {
-      noteInput: {
-        noteOn: oscillatorCore.noteOn,
-        noteOff: oscillatorCore.noteOff,
+  unitInterface.primaryInputPort.setHandlers({
+    noteInput: {
+      noteOn: oscillatorCore.noteOn,
+      noteOff: oscillatorCore.noteOff,
+    },
+    parametersInput: {
+      getParameterSpecs() {
+        return [
+          { id: "wave", steps: 4 },
+          { id: "octave", steps: 0.25 },
+          { id: "volume" },
+        ];
       },
-      parametersInput: {
-        getParameterSpecs() {
-          return [
-            { id: "wave", steps: 4 },
-            { id: "octave", steps: 0.25 },
-            { id: "volume" },
-          ];
-        },
-        getParameter(id: string) {
-          return store.state[id as keyof OscParameters];
-        },
-        setParameter(id: string, value: number) {
-          store.assigns({ [id]: value });
-        },
+      getParameter(id: string) {
+        return store.state[id as keyof OscParameters];
+      },
+      setParameter(id: string, value: number) {
+        store.assigns({ [id]: value });
       },
     },
+  });
+  return {
     RenderUi() {
       const state = store.useSnapshot();
       return (
@@ -95,10 +90,10 @@ function createOscUnit(): HsUnitInstance {
       );
     },
   };
-}
+};
 
-function createKeyboardUnit(): HsUnitInstance {
-  const outputPort = createHsUnitOutputPort();
+const createKeyboardUnit: ReactUnitTemplateFn = (unitInterface) => {
+  const outputPort = unitInterface.primaryOutputPort;
   const actions = {
     async noteOn(note: number) {
       if (gAudioContext.state === "suspended") {
@@ -112,8 +107,6 @@ function createKeyboardUnit(): HsUnitInstance {
     },
   };
   return {
-    outputPort,
-    inputPort: {},
     RenderUi() {
       return (
         <div className="bg-gray-200 w-[200px] h-[100px] flex-c gap-2">
@@ -137,10 +130,10 @@ function createKeyboardUnit(): HsUnitInstance {
       );
     },
   };
-}
+};
 
-function createTwoPortsKeyboardUnit(): HsUnitInstance {
-  const outputPorts = [createHsUnitOutputPort(), createHsUnitOutputPort()];
+const createTwoPortsKeyboardUnit: ReactUnitTemplateFn = (unitInterface) => {
+  const outputPorts = unitInterface.createMultiChannelOutputPorts(2);
   const actions = {
     async noteOn(ch: number, note: number) {
       if (gAudioContext.state === "suspended") {
@@ -154,9 +147,6 @@ function createTwoPortsKeyboardUnit(): HsUnitInstance {
     },
   };
   return {
-    outputPort: outputPorts[0],
-    inputPort: {},
-    outputPorts,
     RenderUi() {
       return (
         <div className="bg-gray-200 w-[200px] h-[100px] flex-c gap-6">
@@ -180,22 +170,23 @@ function createTwoPortsKeyboardUnit(): HsUnitInstance {
       );
     },
   };
-}
+};
 
-function createMixerUnit(): HsUnitInstance {
-  const audioContext = gAudioContext;
-  const outputPort = createHsUnitOutputPort();
-  const destinationNode = outputPort.audioOutput.node;
+const createMixerUnit: ReactUnitTemplateFn = (unitInterface) => {
+  const audioContext = unitInterface.audioContext;
+  const destinationNode = unitInterface.primaryOutputPort.audioOutput.node;
 
-  const gainNodes = seqNumbers(4).map(() => audioContext.createGain());
+  const inputPorts = unitInterface.createMultiChannelInputPorts(4);
+
+  const gainNodes = inputPorts.map((port) => {
+    const gainNode = audioContext.createGain();
+    port.audioInput.node.connect(gainNode);
+    gainNode.connect(destinationNode);
+    return gainNode;
+  });
 
   const store = createStore({
     levels: gainNodes.map(() => 0.5),
-  });
-
-  const inputPorts = gainNodes.map((gainNode) => {
-    gainNode.connect(destinationNode);
-    return { audioInput: { node: gainNode } };
   });
 
   const actionsInternal = {
@@ -223,9 +214,6 @@ function createMixerUnit(): HsUnitInstance {
   };
 
   return {
-    outputPort,
-    inputPort: {},
-    inputPorts,
     RenderUi() {
       const { levels } = store.useSnapshot();
       return (
@@ -243,13 +231,13 @@ function createMixerUnit(): HsUnitInstance {
       );
     },
   };
-}
+};
 
-export const unitFactories = {
+export const reactUnitFactories = {
   osc: createOscUnit,
   keyboard: createKeyboardUnit,
   mixer: createMixerUnit,
   twoPortsKeyboard: createTwoPortsKeyboardUnit,
 };
 
-export type UnitClassKey = keyof typeof unitFactories;
+// export type UnitClassKey = keyof typeof unitFactories;

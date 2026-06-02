@@ -12,7 +12,7 @@ import {
   HsUnitOutputPort,
 } from "@/host-app/host/host-types";
 
-function createHsUnitInputPortPre(): HsUnitInputPortPre {
+export function createHsUnitInputPortPre(): HsUnitInputPortPre {
   const audioNode = gAudioContext.createGain();
   let handlers: HsUnitInputPortPreHandlers | undefined;
   return {
