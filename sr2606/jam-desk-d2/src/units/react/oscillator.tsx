@@ -48,6 +48,19 @@ export const createOscUnit: ReactUnitTemplateFn = (unitInterface) => {
         store.assigns({ [id]: value });
       },
     },
+    stateInput: {
+      emitState() {
+        return { ...store.state };
+      },
+      applyState(state) {
+        const { wave, octave, volume } = state;
+        store.assigns({
+          wave,
+          octave,
+          volume,
+        });
+      },
+    },
   });
   return {
     RenderUi() {

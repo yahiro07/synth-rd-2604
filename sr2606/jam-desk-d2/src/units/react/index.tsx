@@ -2,6 +2,7 @@ import { createKeyboardUnit } from "@/units/react/keyboard";
 import { createMixerUnit } from "@/units/react/mixer";
 import { createOscUnit } from "@/units/react/oscillator";
 import { createParametersControllerUnit } from "@/units/react/parameters-controller-unit";
+import { createStateSwitcherUnit } from "@/units/react/state-switcher";
 import { createTwoPortsKeyboardUnit } from "@/units/react/two-port-keyboard";
 
 export const reactUnitFactories = {
@@ -10,4 +11,5 @@ export const reactUnitFactories = {
   mixer: createMixerUnit,
   twoPortsKeyboard: createTwoPortsKeyboardUnit,
   parameterController: createParametersControllerUnit,
+  stateSwitcher: createStateSwitcherUnit,
 };
