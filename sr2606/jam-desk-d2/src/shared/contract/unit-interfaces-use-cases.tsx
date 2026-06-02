@@ -2,7 +2,7 @@ import { seqNumbers } from "beams/ax/array-utils";
 import {
   HostInterfaceForReact,
   UnitInterfaceForIframe,
-} from "@/contract/unit-interfaces";
+} from "./unit-interfaces";
 
 function _expectedUseCase_defineUnitInApp() {
   let hostInterface!: HostInterfaceForReact;

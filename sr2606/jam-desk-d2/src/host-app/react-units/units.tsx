@@ -1,8 +1,8 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import { createStore } from "snap-store";
-import { Knob } from "@/components/knob";
-import { UnitInstance } from "@/contract/unit-interfaces";
-import { createOutputPort, gAudioContext } from "@/host/host-core";
+import { createOutputPort, gAudioContext } from "@/host-app/host/host-core";
+import { Knob } from "@/shared/components/knob";
+import { UnitInstance } from "@/shared/contract/unit-interfaces";
 
 function createOscUnit(): UnitInstance {
   const audioContext = gAudioContext;

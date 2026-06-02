@@ -1,7 +1,7 @@
 import {
   UnitInputPort,
   UnitOutputPortInHostSide,
-} from "@/contract/unit-interfaces";
+} from "@/shared/contract/unit-interfaces";
 
 export function createOutputPortImpl(
   fnCreateGainNode: () => GainNode,

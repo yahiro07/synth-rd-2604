@@ -1,9 +1,9 @@
+import { gAudioContext } from "@/host-app/host/host-core";
+import { UnitClassKey, unitFactories } from "@/host-app/react-units/units";
 import {
   UnitInputPort,
   UnitInstanceInHostSide,
-} from "@/contract/unit-interfaces";
-import { gAudioContext } from "@/host/host-core";
-import { UnitClassKey, unitFactories } from "@/units/units";
+} from "@/shared/contract/unit-interfaces";
 
 function createHostSystem() {
   const units: Record<string, UnitInstanceInHostSide> = {};

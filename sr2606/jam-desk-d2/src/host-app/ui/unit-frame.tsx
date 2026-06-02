@@ -1,9 +1,9 @@
 /* <UnitFrame id="osc1" unitClassKey="osc" destUnitId="mixer1.ch0" />  */
 
 import { useEffect, useMemo } from "react";
-import { UnitInstanceInHostSide } from "@/contract/unit-interfaces";
-import { hostSystem } from "@/host/host-system";
-import { UnitClassKey } from "@/units/units";
+import { hostSystem } from "@/host-app/host/host-system";
+import { UnitClassKey } from "@/host-app/react-units/units";
+import { UnitInstanceInHostSide } from "@/shared/contract/unit-interfaces";
 
 function connectUnitToDestPort(
   unit: UnitInstanceInHostSide,

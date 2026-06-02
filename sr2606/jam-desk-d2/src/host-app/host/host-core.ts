@@ -1,5 +1,5 @@
-import { UnitOutputPort } from "@/contract/unit-interfaces";
-import { createOutputPortImpl } from "@/host/output-port";
+import { createOutputPortImpl } from "@/host-app/host/output-port";
+import { UnitOutputPort } from "@/shared/contract/unit-interfaces";
 
 const audioContext = new AudioContext();
 export const gAudioContext = audioContext;

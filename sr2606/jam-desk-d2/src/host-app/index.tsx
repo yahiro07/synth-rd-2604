@@ -1,8 +1,8 @@
-import "./page.css";
+import "../page.css";
 import "beams/ax-ui/utility-classes.css";
 //
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
-import { UnitFrame } from "@/ui/unit-frame";
+import { UnitFrame } from "@/host-app/ui/unit-frame";
 
 const App = () => {
   return (
