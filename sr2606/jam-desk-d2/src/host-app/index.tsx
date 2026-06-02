@@ -55,7 +55,7 @@ const App = () => {
         />
       </div>
 
-      <div className="flex-h gap-4">
+      <div className="flex-ha gap-4">
         <ReactUnitFrame
           unitId="twoPortsKeyboard1"
           unitTemplateFn={uf.twoPortsKeyboard}
@@ -65,6 +65,11 @@ const App = () => {
           unitId="paramController1"
           unitTemplateFn={uf.parametersController}
           destSpec="osc2"
+        />
+        <ReactUnitFrame
+          unitId="cvGateStepSequencer1"
+          unitTemplateFn={uf.cvGateStepSequencer}
+          destSpec="cvGateOsc1"
         />
       </div>
     </div>

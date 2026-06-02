@@ -1,4 +1,5 @@
 import { createCvGateOscUnit } from "@/units/react/cv-gate-osc";
+import { createCvGateStepSequencerUnit } from "@/units/react/cv-gate-step-sequencer";
 import { createKeyboardUnit } from "@/units/react/keyboard";
 import { createMixerUnit } from "@/units/react/mixer";
 import { createOscUnit } from "@/units/react/oscillator";
@@ -14,4 +15,5 @@ export const reactUnitFactories = {
   parametersController: createParametersControllerUnit,
   stateSwitcher: createStateSwitcherUnit,
   cvGateOsc: createCvGateOscUnit,
+  cvGateStepSequencer: createCvGateStepSequencerUnit,
 };
