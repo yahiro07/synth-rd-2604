@@ -1,16 +1,13 @@
-import {
-  UnitInputPort,
-  UnitOutputPortInHostSide,
-} from "@/shared/contract/unit-interfaces";
+import { HsUnitInputPort, HsUnitOutputPort } from "@/host-app/host/host-types";
 
-export function createOutputPortImpl(
+export function createHsUnitOutputPortImpl(
   fnCreateGainNode: () => GainNode,
-): UnitOutputPortInHostSide {
-  let connectedInputPort: UnitInputPort | null;
+): HsUnitOutputPort {
+  let connectedInputPort: HsUnitInputPort | null;
   let audioRelayNode: AudioNode | null;
 
   const core = {
-    connectTo(port: UnitInputPort) {
+    connectTo(port: HsUnitInputPort) {
       if (connectedInputPort) {
         core.disconnectFrom(connectedInputPort);
       }
@@ -19,7 +16,7 @@ export function createOutputPortImpl(
       }
       connectedInputPort = port;
     },
-    disconnectFrom(port: UnitInputPort) {
+    disconnectFrom(port: HsUnitInputPort) {
       if (audioRelayNode && port.audioInput) {
         audioRelayNode.disconnect(port.audioInput?.node);
       }

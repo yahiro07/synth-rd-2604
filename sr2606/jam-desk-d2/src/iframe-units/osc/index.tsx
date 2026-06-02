@@ -1,11 +1,11 @@
 import "../../page.css";
 import "beams/ax-ui/utility-classes.css";
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
+import { UnitInterface } from "@/contract/unit-interfaces";
 import { createOscillatorUnitCore } from "@/host-app/react-units/oscillator-unit-core";
-import { UnitInterfaceForIframe } from "@/shared/contract/unit-interfaces";
 
 const unitInterface = (window as any).unitInterface as
-  | UnitInterfaceForIframe
+  | UnitInterface
   | undefined;
 const audioContext = unitInterface?.audioContext ?? new AudioContext();
 const destNode =

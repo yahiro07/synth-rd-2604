@@ -1,28 +1,26 @@
 import { seqNumbers } from "beams/ax/array-utils";
-import { createOutputPort, gAudioContext } from "@/host-app/host/host-core";
+import { HostCallbacks, UnitInterface } from "@/contract/unit-interfaces";
 import {
-  HostCallbacks,
-  UnitInputPort,
-  UnitInputPortC,
-  UnitInputPortCHandlers,
-  UnitInstanceInHostSide,
-  UnitInterfaceForIframe,
-  UnitOutputPortInHostSide,
-} from "@/shared/contract/unit-interfaces";
+  createHsUnitOutputPort,
+  gAudioContext,
+} from "@/host-app/host/host-core";
+import {
+  HsUnitInputPort,
+  HsUnitInputPortPre,
+  HsUnitInputPortPreHandlers,
+  HsUnitInstance,
+  HsUnitOutputPort,
+} from "@/host-app/host/host-types";
 
-type UnitInputPortCInHostSide = UnitInputPortC & {
-  emit(): UnitInputPort;
-};
-
-function createInputPortC(): UnitInputPortCInHostSide {
+function createHsUnitInputPortPre(): HsUnitInputPortPre {
   const audioNode = gAudioContext.createGain();
-  let handlers: UnitInputPortCHandlers | undefined;
+  let handlers: HsUnitInputPortPreHandlers | undefined;
   return {
     audioInput: { node: audioNode },
-    setHandlers(_handlers: UnitInputPortCHandlers) {
+    setHandlers(_handlers: HsUnitInputPortPreHandlers) {
       handlers = _handlers;
     },
-    emit(): UnitInputPort {
+    emit(): HsUnitInputPort {
       return {
         audioInput: { node: audioNode },
         ...handlers,
@@ -33,24 +31,24 @@ function createInputPortC(): UnitInputPortCInHostSide {
 
 export function createUnitInterfaceForIframe(
   unitId: string,
-  createdCallback: (unitInstance: UnitInstanceInHostSide) => void,
-): UnitInterfaceForIframe {
+  createdCallback: (unitInstance: HsUnitInstance) => void,
+): UnitInterface {
   const audioContext = gAudioContext;
-  const primaryOutputPort = createOutputPort();
-  const primaryInputPort = createInputPortC();
-  let outputPorts: UnitOutputPortInHostSide[] | undefined;
-  let inputPorts: UnitInputPortCInHostSide[] | undefined;
+  const primaryOutputPort = createHsUnitOutputPort();
+  const primaryInputPort = createHsUnitInputPortPre();
+  let outputPorts: HsUnitOutputPort[] | undefined;
+  let inputPorts: HsUnitInputPortPre[] | undefined;
   let hostCallbacks: HostCallbacks | undefined;
   return {
     audioContext,
     primaryOutputPort,
     primaryInputPort,
     createMultiChannelOutputPorts(numPorts: number) {
-      outputPorts = seqNumbers(numPorts).map(() => createOutputPort());
+      outputPorts = seqNumbers(numPorts).map(() => createHsUnitOutputPort());
       return outputPorts;
     },
     createMultiChannelInputPorts(numPorts: number) {
-      inputPorts = seqNumbers(numPorts).map(() => createInputPortC());
+      inputPorts = seqNumbers(numPorts).map(() => createHsUnitInputPortPre());
       return inputPorts;
     },
     setHostCallbacks(callbacks: HostCallbacks) {

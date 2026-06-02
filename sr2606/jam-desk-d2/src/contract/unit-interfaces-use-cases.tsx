@@ -1,8 +1,25 @@
 import { seqNumbers } from "beams/ax/array-utils";
-import {
-  HostInterfaceForReact,
-  UnitInterfaceForIframe,
-} from "./unit-interfaces";
+import { ReactNode } from "react";
+import { HsUnitInputPort, HsUnitOutputPort } from "@/host-app/host/host-types";
+import { HostCallbacks, UnitInterface } from "./unit-interfaces";
+
+export type UnitInstanceR = {
+  outputPort: HsUnitOutputPort;
+  inputPort: HsUnitInputPort;
+  outputPorts?: HsUnitOutputPort[];
+  inputPorts?: HsUnitInputPort[];
+  hostCallbacks?: HostCallbacks;
+  RenderUi: () => ReactNode;
+};
+
+export type HostInterfaceForReact = {
+  defineUnitClass(
+    fn: (
+      ac: AudioContext,
+      createOutputPort: () => HsUnitOutputPort,
+    ) => UnitInstanceR,
+  ): void;
+};
 
 function _expectedUseCase_defineUnitInApp() {
   let hostInterface!: HostInterfaceForReact;
@@ -57,7 +74,7 @@ function _expectedUseCase_defineUnitInApp_MultiPortSupport() {
 
 function _expectedUseCase_defineUnitInIframe_Synthesizer() {
   const unitInterface = (window as any).unitInterface as
-    | UnitInterfaceForIframe
+    | UnitInterface
     | undefined;
   const ac = unitInterface?.audioContext ?? new AudioContext();
   const destNode =
@@ -84,7 +101,7 @@ function _expectedUseCase_defineUnitInIframe_Synthesizer() {
 
 function _expectedUseCase_defineUnitInIframe_Effect() {
   const unitInterface = (window as any).unitInterface as
-    | UnitInterfaceForIframe
+    | UnitInterface
     | undefined;
   const ac = unitInterface?.audioContext ?? new AudioContext();
   const inputNode = unitInterface?.primaryInputPort.audioInput?.node;
@@ -101,7 +118,7 @@ function _expectedUseCase_defineUnitInIframe_Effect() {
 
 function _expectedUseCase_defineUnitInIframe_Sequencer() {
   const unitInterface = (window as any).unitInterface as
-    | UnitInterfaceForIframe
+    | UnitInterface
     | undefined;
   const noteOutputPort = unitInterface?.primaryOutputPort.noteOutput;
   unitInterface?.primaryInputPort.setHandlers({
@@ -124,7 +141,7 @@ function _expectedUseCase_defineUnitInIframe_Sequencer() {
 
 function _expectedUseCase_defineUnitInIframe_Mixer() {
   const unitInterface = (window as any).unitInterface as
-    | UnitInterfaceForIframe
+    | UnitInterface
     | undefined;
   if (!unitInterface) {
     return;
@@ -147,7 +164,7 @@ function _expectedUseCase_defineUnitInIframe_Mixer() {
 
 function _expectedUseCase_defineUnitInIframe_MultiOutputSequencer() {
   const unitInterface = (window as any).unitInterface as
-    | UnitInterfaceForIframe
+    | UnitInterface
     | undefined;
   const outputPorts = unitInterface?.createMultiChannelOutputPorts(4);
   const core = {

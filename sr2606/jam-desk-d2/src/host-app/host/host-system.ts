@@ -1,14 +1,11 @@
 import { gAudioContext } from "@/host-app/host/host-core";
+import { HsUnitInputPort, HsUnitInstance } from "@/host-app/host/host-types";
 import { UnitClassKey, unitFactories } from "@/host-app/react-units/units";
-import {
-  UnitInputPort,
-  UnitInstanceInHostSide,
-} from "@/shared/contract/unit-interfaces";
 
 function createHostSystem() {
-  const units: Record<string, UnitInstanceInHostSide> = {};
+  const units: Record<string, HsUnitInstance> = {};
 
-  const audioDestinationUnitInputPort: UnitInputPort = {
+  const audioDestinationUnitInputPort: HsUnitInputPort = {
     audioInput: {
       node: gAudioContext.destination,
     },
@@ -18,20 +15,20 @@ function createHostSystem() {
     createUnitInstance(
       unitClassKey: UnitClassKey,
       unitId: string,
-    ): UnitInstanceInHostSide {
+    ): HsUnitInstance {
       const factory = unitFactories[unitClassKey];
       const tmpUnit = factory();
       const unit = {
         ...tmpUnit,
         unitId,
-      } as UnitInstanceInHostSide;
+      } as HsUnitInstance;
       units[unitId] = unit;
       return unit;
     },
     getUnitInstance(unitId: string) {
       return units[unitId];
     },
-    registerUnitInstance(unit: UnitInstanceInHostSide) {
+    registerUnitInstance(unit: HsUnitInstance) {
       units[unit.unitId] = unit;
       return () => {
         if (units[unit.unitId] === unit) {
@@ -39,7 +36,7 @@ function createHostSystem() {
         }
       };
     },
-    getConnectionTargetPort(destSpec: string): UnitInputPort | undefined {
+    getConnectionTargetPort(destSpec: string): HsUnitInputPort | undefined {
       if (destSpec === "$output") {
         return audioDestinationUnitInputPort;
       }

@@ -1,8 +1,9 @@
+import {} from "@/contract/unit-interfaces";
 import { hostSystem } from "@/host-app/host/host-system";
-import { UnitInstanceInHostSide } from "@/shared/contract/unit-interfaces";
+import { HsUnitInstance } from "@/host-app/host/host-types";
 
 function connectUnitToDestPort(
-  unit: UnitInstanceInHostSide,
+  unit: HsUnitInstance,
   destSpec: string,
   outputPortIndex?: number,
 ) {
@@ -26,7 +27,7 @@ function connectUnitToDestPort(
 }
 
 export function connectUnitToDestination(
-  unit: UnitInstanceInHostSide,
+  unit: HsUnitInstance,
   destSpec: string | string[],
 ) {
   if (Array.isArray(destSpec)) {

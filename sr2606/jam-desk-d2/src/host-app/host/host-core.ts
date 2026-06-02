@@ -1,9 +1,9 @@
-import { createOutputPortImpl } from "@/host-app/host/output-port";
-import { UnitOutputPortInHostSide } from "@/shared/contract/unit-interfaces";
+import { HsUnitOutputPort } from "@/host-app/host/host-types";
+import { createHsUnitOutputPortImpl } from "@/host-app/host/output-port";
 
 const audioContext = new AudioContext();
 export const gAudioContext = audioContext;
 
-export function createOutputPort(): UnitOutputPortInHostSide {
-  return createOutputPortImpl(() => audioContext.createGain());
+export function createHsUnitOutputPort(): HsUnitOutputPort {
+  return createHsUnitOutputPortImpl(() => audioContext.createGain());
 }

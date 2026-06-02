@@ -1,47 +1,50 @@
 import { ReactNode } from "react";
-import { createOutputPort, gAudioContext } from "@/host-app/host/host-core";
+import { HostCallbacks } from "@/contract/unit-interfaces";
 import {
-  HostCallbacks,
-  UnitInputPort,
-  UnitInstanceInHostSide,
-  UnitOutputPortInHostSide,
-} from "@/shared/contract/unit-interfaces";
+  createHsUnitOutputPort,
+  gAudioContext,
+} from "@/host-app/host/host-core";
+import {
+  HsUnitInputPort,
+  HsUnitInstance,
+  HsUnitOutputPort,
+} from "@/host-app/host/host-types";
 
 type UnitAdapter = {
   unitId: string;
-  outputPort: UnitOutputPortInHostSide;
-  inputPort: UnitInputPort;
-  outputPorts?: UnitOutputPortInHostSide[];
-  inputPorts?: UnitInputPort[];
+  outputPort: HsUnitOutputPort;
+  inputPort: HsUnitInputPort;
+  outputPorts?: HsUnitOutputPort[];
+  inputPorts?: HsUnitInputPort[];
   hostCallbacks?: HostCallbacks;
   RenderUi?: () => ReactNode;
   //
-  mountUnitInstance(unitInstance: UnitInstanceInHostSide): () => void;
+  mountUnitInstance(unitInstance: HsUnitInstance): () => void;
 };
 
-type AdapterOutputPort = UnitOutputPortInHostSide & {
-  mountOutputPort(port: UnitOutputPortInHostSide | undefined): () => void;
+type AdapterOutputPort = HsUnitOutputPort & {
+  mountOutputPort(port: HsUnitOutputPort | undefined): () => void;
 };
 
 function createAdapterOutputPort(): AdapterOutputPort {
-  const pendingDestinations = new Set<UnitInputPort>();
-  let mountedPort: UnitOutputPortInHostSide | undefined;
+  const pendingDestinations = new Set<HsUnitInputPort>();
+  let mountedPort: HsUnitOutputPort | undefined;
 
-  const connectMountedPort = (port: UnitOutputPortInHostSide | undefined) => {
+  const connectMountedPort = (port: HsUnitOutputPort | undefined) => {
     pendingDestinations.forEach((destination) => port?.connectTo(destination));
   };
 
   return {
-    ...createOutputPort(),
-    connectTo(port: UnitInputPort) {
+    ...createHsUnitOutputPort(),
+    connectTo(port: HsUnitInputPort) {
       pendingDestinations.add(port);
       mountedPort?.connectTo(port);
     },
-    disconnectFrom(port: UnitInputPort) {
+    disconnectFrom(port: HsUnitInputPort) {
       pendingDestinations.delete(port);
       mountedPort?.disconnectFrom(port);
     },
-    mountOutputPort(port: UnitOutputPortInHostSide | undefined) {
+    mountOutputPort(port: HsUnitOutputPort | undefined) {
       if (mountedPort) {
         pendingDestinations.forEach((destination) => {
           mountedPort?.disconnectFrom(destination);
@@ -61,13 +64,13 @@ function createAdapterOutputPort(): AdapterOutputPort {
   };
 }
 
-function createAdapterInputPort(): UnitInputPort & {
-  mountInputPort(port: UnitInputPort | undefined): () => void;
+function createAdapterInputPort(): HsUnitInputPort & {
+  mountInputPort(port: HsUnitInputPort | undefined): () => void;
 } {
   const audioInputNode = gAudioContext.createGain();
-  let mountedPort: UnitInputPort | undefined;
+  let mountedPort: HsUnitInputPort | undefined;
 
-  const connectMountedPort = (port: UnitInputPort | undefined) => {
+  const connectMountedPort = (port: HsUnitInputPort | undefined) => {
     if (port?.audioInput) {
       audioInputNode.connect(port.audioInput.node);
     }
@@ -138,7 +141,7 @@ function createAdapterInputPort(): UnitInputPort & {
         mountedPort?.samplerPadInput?.playTone?.(toneId);
       },
     },
-    mountInputPort(port: UnitInputPort | undefined) {
+    mountInputPort(port: HsUnitInputPort | undefined) {
       if (mountedPort?.audioInput) {
         audioInputNode.disconnect(mountedPort.audioInput.node);
       }
@@ -172,7 +175,7 @@ function createPortArray<T>(createPort: (index: number) => T): T[] {
 export function createUnitAdapter(unitId: string): UnitAdapter {
   const outputPort = createAdapterOutputPort();
   const inputPort = createAdapterInputPort();
-  let unitInstance: UnitInstanceInHostSide | null = null;
+  let unitInstance: HsUnitInstance | null = null;
   const outputPortCleanups: Array<(() => void) | undefined> = [];
   const inputPortCleanups: Array<(() => void) | undefined> = [];
   const outputPorts = createPortArray((index) => {
@@ -201,7 +204,7 @@ export function createUnitAdapter(unitId: string): UnitAdapter {
     get RenderUi() {
       return unitInstance?.RenderUi;
     },
-    mountUnitInstance(instance: UnitInstanceInHostSide) {
+    mountUnitInstance(instance: HsUnitInstance) {
       const cleanupFns = [
         outputPort.mountOutputPort(instance.outputPort),
         inputPort.mountInputPort(instance.inputPort),

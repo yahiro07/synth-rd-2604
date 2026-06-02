@@ -1,16 +1,19 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import { createStore } from "snap-store";
-import { createOutputPort, gAudioContext } from "@/host-app/host/host-core";
+import {
+  createHsUnitOutputPort,
+  gAudioContext,
+} from "@/host-app/host/host-core";
+import { HsUnitInstance } from "@/host-app/host/host-types";
 import {
   createOscillatorUnitCore,
   OscParameters,
 } from "@/host-app/react-units/oscillator-unit-core";
 import { Knob } from "@/shared/components/knob";
 import { UpperLabel } from "@/shared/components/upper-label";
-import { UnitInstance } from "@/shared/contract/unit-interfaces";
 
-function createOscUnit(): UnitInstance {
-  const outputPort = createOutputPort();
+function createOscUnit(): HsUnitInstance {
+  const outputPort = createHsUnitOutputPort();
   const oscillatorCore = createOscillatorUnitCore(
     gAudioContext,
     outputPort.audioOutput.node,
@@ -94,8 +97,8 @@ function createOscUnit(): UnitInstance {
   };
 }
 
-function createKeyboardUnit(): UnitInstance {
-  const outputPort = createOutputPort();
+function createKeyboardUnit(): HsUnitInstance {
+  const outputPort = createHsUnitOutputPort();
   const actions = {
     async noteOn(note: number) {
       if (gAudioContext.state === "suspended") {
@@ -136,8 +139,8 @@ function createKeyboardUnit(): UnitInstance {
   };
 }
 
-function createTwoPortsKeyboardUnit(): UnitInstance {
-  const outputPorts = [createOutputPort(), createOutputPort()];
+function createTwoPortsKeyboardUnit(): HsUnitInstance {
+  const outputPorts = [createHsUnitOutputPort(), createHsUnitOutputPort()];
   const actions = {
     async noteOn(ch: number, note: number) {
       if (gAudioContext.state === "suspended") {
@@ -179,9 +182,9 @@ function createTwoPortsKeyboardUnit(): UnitInstance {
   };
 }
 
-function createMixerUnit(): UnitInstance {
+function createMixerUnit(): HsUnitInstance {
   const audioContext = gAudioContext;
-  const outputPort = createOutputPort();
+  const outputPort = createHsUnitOutputPort();
   const destinationNode = outputPort.audioOutput.node;
 
   const gainNodes = seqNumbers(4).map(() => audioContext.createGain());
