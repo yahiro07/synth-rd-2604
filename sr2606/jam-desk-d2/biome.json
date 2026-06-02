@@ -14,7 +14,8 @@
         "useExponentiationOperator": "off"
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "useIterableCallbackReturn": "off"
       },
       "correctness": {
         "noConstantCondition": "off"

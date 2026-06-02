@@ -189,9 +189,7 @@ function createAdapterInputPort(): HsUnitInputPort & {
       mountedPort = port;
       connectMountedPort(mountedPort);
       if (connectedSubPortTypes) {
-        connectedSubPortTypes = getMountedSubPortTypes(
-          connectedHasAudioOutput,
-        );
+        connectedSubPortTypes = getMountedSubPortTypes(connectedHasAudioOutput);
         subPortTypeListeners.forEach((listener) => {
           listener(connectedSubPortTypes!);
         });
