@@ -1,9 +1,0 @@
-{
-  "name": "@beam/mo-react",
-  "private": true,
-  "type": "module",
-  "peerDependencies": {
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
-  }
-}

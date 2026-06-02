@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
@@ -10,22 +10,20 @@
       "recommended": true,
       "style": {
         "useImportType": "off",
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "useExponentiationOperator": "off"
       },
       "suspicious": {
         "noExplicitAny": "off",
         "useIterableCallbackReturn": "off"
-      },
-      "complexity": {
-        "noUselessSwitchCase": "off"
       },
       "correctness": {
         "noConstantCondition": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
-        "useKeyWithClickEvents": "off",
-        "noStaticElementInteractions": "off"
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off"
       }
     }
   }
