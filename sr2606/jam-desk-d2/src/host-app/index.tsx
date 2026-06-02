@@ -81,6 +81,11 @@ const App = () => {
 
       <div className="flex-ha gap-4">
         <ReactUnitFrame
+          unitId="keyboard4"
+          unitTemplateFn={uf.keyboard}
+          destSpec={["osc1", "osc2"]}
+        />
+        <ReactUnitFrame
           unitId="clockDivider1"
           unitTemplateFn={uf.clockDivider}
           destSpec="cvGateStepSequencer1"

@@ -1,3 +1,4 @@
+import { iife } from "beams/ax/object-utils";
 import {} from "@/contract/unit-interfaces";
 import { hostSystem } from "@/host-app/host/host-system";
 import { HsUnitInstance } from "@/host-app/host/host-types";
@@ -7,15 +8,19 @@ function connectUnitToDestPort(
   destSpec: string,
   outputPortIndex?: number,
 ) {
-  const srcPort =
-    outputPortIndex !== undefined
-      ? unit.outputPorts?.[outputPortIndex]
-      : unit.outputPort;
-
-  const srcSpec =
-    outputPortIndex !== undefined
-      ? `${unit.unitId}.port${outputPortIndex}`
-      : `${unit.unitId}`;
+  const [srcPort, srcSpec] = iife(() => {
+    if (outputPortIndex !== undefined) {
+      if (unit.outputPorts?.[outputPortIndex]) {
+        return [
+          unit.outputPorts[outputPortIndex],
+          `${unit.unitId}.port${outputPortIndex}`,
+        ] as const;
+      } else {
+        //fallback to primary output port if specified index port does not exist
+      }
+    }
+    return [unit.outputPort, `${unit.unitId}`] as const;
+  });
 
   let connected = false;
   let cleanupFromPort: (() => void) | undefined;

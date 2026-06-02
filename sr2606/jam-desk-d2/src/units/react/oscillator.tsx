@@ -13,7 +13,7 @@ export const createOscUnit: ReactUnitTemplateFn = (unitInterface) => {
     unitInterface.primaryOutputPort.audioOutput.node,
   );
   const store = createStore<OscParameters>({
-    wave: 0,
+    wave: 0.3334,
     octave: 0.5,
     volume: 0.5,
   });
@@ -28,6 +28,9 @@ export const createOscUnit: ReactUnitTemplateFn = (unitInterface) => {
       oscillatorCore.setParameter("volume", attrs.volume);
     }
   });
+  oscillatorCore.setParameter("wave", store.state.wave);
+  oscillatorCore.setParameter("octave", store.state.octave);
+  oscillatorCore.setParameter("volume", store.state.volume);
   unitInterface.primaryInputPort.setHandlers({
     noteInput: {
       noteOn: oscillatorCore.noteOn,

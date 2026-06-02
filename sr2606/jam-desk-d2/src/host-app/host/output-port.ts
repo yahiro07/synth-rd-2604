@@ -22,43 +22,47 @@ function getConnectedSubPortTypes(
 export function createHsUnitOutputPortImpl(
   fnCreateGainNode: () => GainNode,
 ): HsUnitOutputPort {
-  let connectedInputPort: HsUnitInputPort | null;
+  const connectedInputPorts = new Set<HsUnitInputPort>();
+  const unsubscribeSubPortTypesByPort = new Map<HsUnitInputPort, () => void>();
   let audioRelayNode: AudioNode | null;
   let callbacks: Parameters<UnitOutputPort["setCallbacks"]>[0] | undefined;
-  let unsubscribeSubPortTypes: (() => void) | undefined;
 
   const core = {
     connectTo(port: HsUnitInputPort) {
-      if (connectedInputPort) {
-        core.disconnectFrom(connectedInputPort);
+      if (connectedInputPorts.has(port)) {
+        return;
       }
       if (audioRelayNode && port.audioInput) {
         audioRelayNode.connect(port.audioInput?.node);
       }
-      connectedInputPort = port;
       const subPortTypes = getConnectedSubPortTypes(port, !!audioRelayNode);
+      connectedInputPorts.add(port);
       callbacks?.onConnectedTo?.(subPortTypes);
       port.callbacks?.onConnectedFrom?.(subPortTypes);
-      unsubscribeSubPortTypes = port.subscribeSubPortTypes?.(
+      const unsubscribeSubPortTypes = port.subscribeSubPortTypes?.(
         (nextSubPortTypes) => {
-          if (connectedInputPort === port) {
+          if (connectedInputPorts.has(port)) {
             callbacks?.onConnectedTo?.(nextSubPortTypes);
           }
         },
       );
+      if (unsubscribeSubPortTypes) {
+        unsubscribeSubPortTypesByPort.set(port, unsubscribeSubPortTypes);
+      }
     },
     disconnectFrom(port: HsUnitInputPort) {
-      const wasConnected = connectedInputPort === port;
+      const wasConnected = connectedInputPorts.has(port);
+      if (!wasConnected) {
+        return;
+      }
       if (audioRelayNode && port.audioInput) {
         audioRelayNode.disconnect(port.audioInput?.node);
       }
-      if (wasConnected) {
-        unsubscribeSubPortTypes?.();
-        unsubscribeSubPortTypes = undefined;
-        connectedInputPort = null;
-        callbacks?.onDisconnectTo?.();
-        port.callbacks?.onDisconnectFrom?.();
-      }
+      unsubscribeSubPortTypesByPort.get(port)?.();
+      unsubscribeSubPortTypesByPort.delete(port);
+      connectedInputPorts.delete(port);
+      callbacks?.onDisconnectTo?.();
+      port.callbacks?.onDisconnectFrom?.();
     },
   };
   return {
@@ -75,62 +79,89 @@ export function createHsUnitOutputPortImpl(
     },
     noteOutput: {
       noteOn(note: number) {
-        connectedInputPort?.noteInput?.noteOn(note);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.noteInput?.noteOn(note);
+        });
       },
       noteOff(note: number) {
-        connectedInputPort?.noteInput?.noteOff(note);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.noteInput?.noteOff(note);
+        });
       },
     },
     cvGateOutput: {
       setCv(cv: number) {
-        connectedInputPort?.cvGateInput?.setCv(cv);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.cvGateInput?.setCv(cv);
+        });
       },
       setGate(gate: boolean) {
-        connectedInputPort?.cvGateInput?.setGate(gate);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.cvGateInput?.setGate(gate);
+        });
       },
     },
     clockOutput: {
       start() {
-        connectedInputPort?.clockInput?.start?.();
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.clockInput?.start?.();
+        });
       },
       step(stepIndex: number) {
-        connectedInputPort?.clockInput?.step?.(stepIndex);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.clockInput?.step?.(stepIndex);
+        });
       },
       stop() {
-        connectedInputPort?.clockInput?.stop?.();
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.clockInput?.stop?.();
+        });
       },
     },
     stateOutput: {
       emitState() {
+        const connectedInputPort = connectedInputPorts.values().next().value;
         return connectedInputPort?.stateInput?.emitState?.();
       },
       applyState(state: Record<string, any>) {
-        connectedInputPort?.stateInput?.applyState?.(state);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.stateInput?.applyState?.(state);
+        });
       },
       emitStateBytes() {
+        const connectedInputPort = connectedInputPorts.values().next().value;
         return connectedInputPort?.stateInput?.emitStateBytes?.();
       },
       applyStateBytes(bytes: Uint8Array) {
-        connectedInputPort?.stateInput?.applyStateBytes?.(bytes);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.stateInput?.applyStateBytes?.(bytes);
+        });
       },
     },
     automationOutput: {
       getParameterSpecs() {
+        const connectedInputPort = connectedInputPorts.values().next().value;
         return connectedInputPort?.automationInput?.getParameterSpecs?.() ?? [];
       },
       getParameter(id: string) {
+        const connectedInputPort = connectedInputPorts.values().next().value;
         return connectedInputPort?.automationInput?.getParameter?.(id) ?? 0;
       },
       setParameter(id: string, value: number) {
-        connectedInputPort?.automationInput?.setParameter?.(id, value);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.automationInput?.setParameter?.(id, value);
+        });
       },
     },
     samplerPadOutput: {
       getToneIds() {
+        const connectedInputPort = connectedInputPorts.values().next().value;
         return connectedInputPort?.samplerPadInput?.getToneIds?.() ?? [];
       },
       playTone(toneId: string) {
-        connectedInputPort?.samplerPadInput?.playTone?.(toneId);
+        connectedInputPorts.forEach((connectedInputPort) => {
+          connectedInputPort.samplerPadInput?.playTone?.(toneId);
+        });
       },
     },
   };

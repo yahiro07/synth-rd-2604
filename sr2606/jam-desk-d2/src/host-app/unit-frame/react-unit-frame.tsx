@@ -26,11 +26,12 @@ export const ReactUnitFrame = ({
     return hostSystem.registerUnitInstance(unit);
   }, [unit]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: variable length deps
   useEffect(() => {
     if (destSpec) {
       return connectUnitToDestination(unit, destSpec);
     }
-  }, [destSpec, unit]);
+  }, [...(Array.isArray(destSpec) ? destSpec : [destSpec]), unit]);
 
   return (
     <UnitIdsBox unitId={unitId} destSpec={destSpec}>
