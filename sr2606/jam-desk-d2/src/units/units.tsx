@@ -134,7 +134,7 @@ function createMixerUnit(): UnitInstance {
         <div className="bg-gray-200 w-[200px] h-[100px] flex-c gap-3">
           {seqNumbers(4).map((ch) => (
             <div key={ch} className="flex-vc gap-1">
-              <span>ch{ch + 1}</span>
+              <span>{ch + 1}</span>
               <Knob
                 value={levels[ch]}
                 onChange={(value) => actions.setLevel(ch, value)}

@@ -31,11 +31,21 @@ function createHostSystem() {
     getUnitInstance(unitId: string) {
       return units[unitId];
     },
-    getConnectionTargetPort(destUnitId: string): UnitInputPort | undefined {
-      if (destUnitId === "$output") {
+    getConnectionTargetPort(destSpec: string): UnitInputPort | undefined {
+      if (destSpec === "$output") {
         return audioDestinationUnitInputPort;
       }
-      return units[destUnitId]?.inputPort;
+      if (destSpec.includes(".")) {
+        const [unitId, portName] = destSpec.split(".");
+        const portIndex = parseInt(portName.replace("port", ""), 10);
+        if (unitId && Number.isFinite(portIndex)) {
+          const unit = units[unitId];
+          return unit?.inputPorts?.[portIndex];
+        }
+      } else {
+        const unit = units[destSpec];
+        return unit?.inputPort;
+      }
     },
   };
 }
