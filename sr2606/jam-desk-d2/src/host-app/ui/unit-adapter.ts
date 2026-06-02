@@ -123,11 +123,11 @@ function createAdapterInputPort(): UnitInputPort & {
       getParameterSpecs() {
         return mountedPort?.parametersInput?.getParameterSpecs?.() ?? [];
       },
-      getParameterValue(id) {
-        return mountedPort?.parametersInput?.getParameterValue?.(id) ?? 0;
+      getParameter(id) {
+        return mountedPort?.parametersInput?.getParameter?.(id) ?? 0;
       },
-      setParameterValue(id, value) {
-        mountedPort?.parametersInput?.setParameterValue?.(id, value);
+      setParameter(id, value) {
+        mountedPort?.parametersInput?.setParameter?.(id, value);
       },
     },
     samplerPadInput: {

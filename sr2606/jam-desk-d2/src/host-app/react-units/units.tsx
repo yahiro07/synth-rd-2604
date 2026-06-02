@@ -38,6 +38,21 @@ function createOscUnit(): UnitInstance {
         noteOn: oscillatorCore.noteOn,
         noteOff: oscillatorCore.noteOff,
       },
+      parametersInput: {
+        getParameterSpecs() {
+          return [
+            { id: "wave", steps: 4 },
+            { id: "octave", steps: 0.25 },
+            { id: "volume" },
+          ];
+        },
+        getParameter(id: string) {
+          return store.state[id as keyof OscParameters];
+        },
+        setParameter(id: string, value: number) {
+          store.assigns({ [id]: value });
+        },
+      },
     },
     RenderUi() {
       const state = store.useSnapshot();

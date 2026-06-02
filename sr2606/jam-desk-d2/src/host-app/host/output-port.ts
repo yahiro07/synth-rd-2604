@@ -82,13 +82,11 @@ export function createOutputPortImpl(
       getParameterSpecs() {
         return connectedInputPort?.parametersInput?.getParameterSpecs?.() ?? [];
       },
-      getParameterValue(id: string) {
-        return (
-          connectedInputPort?.parametersInput?.getParameterValue?.(id) ?? 0
-        );
+      getParameter(id: string) {
+        return connectedInputPort?.parametersInput?.getParameter?.(id) ?? 0;
       },
-      setParameterValue(id: string, value: number) {
-        connectedInputPort?.parametersInput?.setParameterValue?.(id, value);
+      setParameter(id: string, value: number) {
+        connectedInputPort?.parametersInput?.setParameter?.(id, value);
       },
     },
     samplerPadOutput: {

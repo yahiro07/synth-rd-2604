@@ -26,14 +26,14 @@ type StatePort = {
 
 type ParameterSpec = {
   id: string;
-  steps: number; //2 for on/off, 3 for low/medium/high, etc
+  steps?: number; //2 for on/off, 3 for low/medium/high, etc
   //all parameters are ranged in 0~1
 };
 
 type ParametersPort = {
   getParameterSpecs(): ParameterSpec[];
-  getParameterValue(id: string): number;
-  setParameterValue(id: string, value: number): void;
+  getParameter(id: string): number;
+  setParameter(id: string, value: number): void;
 };
 
 type SamplerPadPort = {
