@@ -29,7 +29,7 @@ function connectUnitToDestPort(
   }
 }
 
-export const UnitFrame = ({
+export const ReactUnitFrame = ({
   unitId,
   unitClassKey,
   destSpec,
