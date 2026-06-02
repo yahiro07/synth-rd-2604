@@ -24,6 +24,7 @@ export const createCvGateStepSequencerUnit: ReactUnitTemplateFn = (
   unitInterface.primaryInputPort.setHandlers({
     clockInput: {
       step(stepIndex) {
+        console.log("cvGateSequencer step", stepIndex);
         const localStep = stepIndex % 8;
         store.setCurrentStep(localStep);
 

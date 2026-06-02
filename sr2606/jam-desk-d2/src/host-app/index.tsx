@@ -10,11 +10,18 @@ const App = () => {
   const uf = reactUnitFactories;
   return (
     <div className="flex-vc gap-4">
-      <ReactUnitFrame
-        unitId="mixer1"
-        unitTemplateFn={uf.mixer}
-        destSpec="$output"
-      />
+      <div className="flex-h gap-4">
+        <ReactUnitFrame
+          unitId="masterClock1"
+          unitTemplateFn={uf.masterClock}
+          destSpec="cvGateStepSequencer1"
+        />
+        <ReactUnitFrame
+          unitId="mixer1"
+          unitTemplateFn={uf.mixer}
+          destSpec="$output"
+        />
+      </div>
       <div className="flex-h gap-4">
         <UnitFrame
           unitId="osc1"
