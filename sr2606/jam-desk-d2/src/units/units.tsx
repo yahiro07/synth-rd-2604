@@ -96,6 +96,47 @@ function createKeyboardUnit(): UnitInstance {
   };
 }
 
+function createTwoPortsKeyboardUnit(): UnitInstance {
+  const outputPorts = [createOutputPort(), createOutputPort()];
+  const actions = {
+    async noteOn(ch: number, note: number) {
+      if (gAudioContext.state === "suspended") {
+        await gAudioContext.resume();
+        console.log("resumed");
+      }
+      outputPorts[ch].noteOutput.noteOn(note);
+    },
+    noteOff(ch: number, note: number) {
+      outputPorts[ch].noteOutput.noteOff(note);
+    },
+  };
+  return {
+    outputPorts,
+    RenderUi() {
+      return (
+        <div className="bg-gray-200 w-[200px] h-[100px] flex-c gap-6">
+          <button
+            type="button"
+            onPointerDown={() => actions.noteOn(0, 48)}
+            onPointerUp={() => actions.noteOff(0, 48)}
+            className="cursor-pointer bg-white px-4 py-2"
+          >
+            C-1
+          </button>
+          <button
+            type="button"
+            onPointerDown={() => actions.noteOn(1, 72)}
+            onPointerUp={() => actions.noteOff(1, 72)}
+            className="cursor-pointer bg-white px-4 py-2"
+          >
+            C+1
+          </button>
+        </div>
+      );
+    },
+  };
+}
+
 function createMixerUnit(): UnitInstance {
   const audioContext = gAudioContext;
   const outputPort = createOutputPort();
@@ -162,6 +203,7 @@ export const unitFactories = {
   osc: createOscUnit,
   keyboard: createKeyboardUnit,
   mixer: createMixerUnit,
+  twoPortsKeyboard: createTwoPortsKeyboardUnit,
 };
 
 export type UnitClassKey = keyof typeof unitFactories;

@@ -26,6 +26,11 @@ const App = () => {
           />
         </div>
       </div>
+      <UnitFrame
+        unitId="twoPortsKeyboard1"
+        unitClassKey="twoPortsKeyboard"
+        destSpec={["osc1", "osc2"]}
+      />
     </div>
   );
 };
