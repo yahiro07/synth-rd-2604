@@ -60,9 +60,5 @@ export const ReactUnitFrame = ({
     }
   }, [destSpec, unit]);
 
-  return (
-    <div>
-      <unit.RenderUi />
-    </div>
-  );
+  return <div>{unit.RenderUi && <unit.RenderUi />}</div>;
 };

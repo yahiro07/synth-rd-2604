@@ -70,12 +70,23 @@ export type UnitOutputPortInHostSide = UnitOutputPort & {
   disconnectFrom(port: UnitInputPort): void;
 };
 
+export type MetaAttributes = {
+  key?: string; //C, Am, ... etc
+};
+
+export type HostCallbacks = {
+  setBpm?(bpm: number): void;
+  setPlayState?(playing: boolean): void;
+  setMetaAttributes?(metaAttrs: MetaAttributes): void;
+};
+
 export type UnitInstance = {
   outputPort?: UnitOutputPort;
   inputPort?: UnitInputPort;
   outputPorts?: UnitOutputPort[];
   inputPorts?: UnitInputPort[];
-  RenderUi: () => ReactNode;
+  hostCallbacks?: HostCallbacks;
+  RenderUi?: () => ReactNode;
 };
 
 export type UnitInstanceInHostSide = {
@@ -85,7 +96,8 @@ export type UnitInstanceInHostSide = {
   inputPort: UnitInputPort;
   outputPorts?: UnitOutputPortInHostSide[];
   inputPorts?: UnitInputPort[];
-  RenderUi: () => ReactNode;
+  hostCallbacks?: HostCallbacks;
+  RenderUi?: () => ReactNode;
 };
 
 type OutputPortCreator = () => UnitOutputPortInHostSide;
@@ -100,24 +112,18 @@ export type HostInterfaceForReact = {
   ): void;
 };
 
+export type UnitInputPortCHandlers = {
+  noteInput?: NotePort;
+  cvGateInput?: CvGatePort;
+  clockInput?: ClockPort;
+  statInput?: StatePort;
+  parametersInput?: ParametersPort;
+  samplerPadInput?: SamplerPadPort;
+};
+
 export type UnitInputPortC = {
   audioInput: AudioPort;
-  setHandlers(handlers: {
-    noteInput?: NotePort;
-    cvGateInput?: CvGatePort;
-    clockInput?: ClockPort;
-    statInput?: StatePort;
-  }): void;
-};
-
-export type MetaAttributes = {
-  key?: string; //C, Am, ... etc
-};
-
-type HostCallbacks = {
-  setBpm?(bpm: number): void;
-  setPlayState?(playing: boolean): void;
-  setMetaAttributes?(metaAttrs: MetaAttributes): void;
+  setHandlers(handlers: UnitInputPortCHandlers): void;
 };
 
 export type UnitInterfaceForIframe = {
@@ -128,8 +134,8 @@ export type UnitInterfaceForIframe = {
   // audioSourceNode: AudioNode;
   primaryOutputPort: UnitOutputPort;
   primaryInputPort: UnitInputPortC;
-  createMultiChannelOutputPorts(numChannels: number): UnitOutputPort[];
-  createMultiChannelInputPorts(numChannels: number): UnitInputPortC[];
+  createMultiChannelOutputPorts(numPorts: number): UnitOutputPort[];
+  createMultiChannelInputPorts(numPorts: number): UnitInputPortC[];
   // outputPort: UnitOutputPort & { channels(index: number): UnitOutputPort };
   // inputPort: UnitInputPortC & { channels(index: number): UnitInputPortC };
   // completeUnitRegistration(): void;

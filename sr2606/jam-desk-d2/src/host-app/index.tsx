@@ -3,16 +3,22 @@ import "beams/ax-ui/utility-classes.css";
 //
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
 import { ReactUnitFrame } from "@/host-app/ui/react-unit-frame";
+import { UnitFrame } from "@/host-app/ui/unit-frame";
 
 const App = () => {
   return (
     <div className="flex-vc gap-4">
       <ReactUnitFrame unitId="mixer1" unitClassKey="mixer" destSpec="$output" />
       <div className="flex-h gap-4">
-        <div className="flex-v gap-2">
-          <ReactUnitFrame
+        <div className="flex-vc gap-2">
+          {/* <ReactUnitFrame
             unitId="osc1"
             unitClassKey="osc"
+            destSpec="mixer1.port0"
+          /> */}
+          <UnitFrame
+            unitId="osc1"
+            pageUrl="/units/osc/index.html"
             destSpec="mixer1.port0"
           />
           <ReactUnitFrame

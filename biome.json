@@ -19,7 +19,8 @@
         "noUselessSwitchCase": "off"
       },
       "correctness": {
-        "noConstantCondition": "off"
+        "noConstantCondition": "off",
+        "useExhaustiveDependencies": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
