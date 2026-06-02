@@ -53,10 +53,10 @@ export type AudioPort = {
 };
 
 export type UnitOutputPort = {
-  // setListener(listener: {
-  //   onConnect(subPortTypes: SubPortType[]): void;
-  //   onDisconnect(): void;
-  // }): void;
+  setCallbacks(callbacks: {
+    onConnectedTo?(subPortTypes: SubPortType[]): void;
+    onDisconnectTo?(): void;
+  }): void;
   audioOutput: AudioPort;
   noteOutput: NotePort;
   cvGateOutput: CvGatePort;
@@ -68,6 +68,10 @@ export type UnitOutputPort = {
 
 export type UnitInputPort = {
   audioInput: AudioPort;
+  setCallbacks(callbacks: {
+    onConnectedFrom?(subPortTypes: SubPortType[]): void;
+    onDisconnectFrom?(): void;
+  }): void;
   setHandlers(handlers: {
     noteInput?: NotePort;
     cvGateInput?: CvGatePort;

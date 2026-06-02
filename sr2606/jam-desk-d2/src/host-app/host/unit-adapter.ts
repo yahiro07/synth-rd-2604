@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { HostCallbacks } from "@/contract/unit-interfaces";
+import { HostCallbacks, SubPortType } from "@/contract/unit-interfaces";
 import {
   createHsUnitOutputPort,
   gAudioContext,
@@ -69,15 +69,43 @@ function createAdapterInputPort(): HsUnitInputPort & {
 } {
   const audioInputNode = gAudioContext.createGain();
   let mountedPort: HsUnitInputPort | undefined;
+  let connectedSubPortTypes: SubPortType[] | undefined;
+  let connectedHasAudioOutput = false;
+  const subPortTypeListeners = new Set<(subPortTypes: SubPortType[]) => void>();
 
   const connectMountedPort = (port: HsUnitInputPort | undefined) => {
     if (port?.audioInput) {
       audioInputNode.connect(port.audioInput.node);
     }
   };
+  const getMountedSubPortTypes = (hasAudioOutput: boolean): SubPortType[] => {
+    connectedHasAudioOutput = hasAudioOutput;
+    if (!mountedPort) {
+      return [];
+    }
+    if (mountedPort.getSubPortTypes) {
+      return mountedPort.getSubPortTypes(hasAudioOutput);
+    }
+    return [
+      hasAudioOutput && mountedPort.audioInput ? "audio" : undefined,
+      mountedPort.noteInput ? "note" : undefined,
+      mountedPort.cvGateInput ? "cvGate" : undefined,
+      mountedPort.clockInput ? "clock" : undefined,
+      mountedPort.stateInput ? "state" : undefined,
+      mountedPort.parametersInput ? "parameters" : undefined,
+      mountedPort.samplerPadInput ? "samplerPad" : undefined,
+    ].filter((type): type is SubPortType => !!type);
+  };
 
   return {
     audioInput: { node: audioInputNode },
+    getSubPortTypes: getMountedSubPortTypes,
+    subscribeSubPortTypes(listener) {
+      subPortTypeListeners.add(listener);
+      return () => {
+        subPortTypeListeners.delete(listener);
+      };
+    },
     noteInput: {
       noteOn(note, velocity) {
         mountedPort?.noteInput?.noteOn(note, velocity);
@@ -141,16 +169,44 @@ function createAdapterInputPort(): HsUnitInputPort & {
         mountedPort?.samplerPadInput?.playTone?.(toneId);
       },
     },
+    callbacks: {
+      onConnectedFrom(subPortTypes) {
+        connectedSubPortTypes = subPortTypes;
+        mountedPort?.callbacks?.onConnectedFrom?.(subPortTypes);
+      },
+      onDisconnectFrom() {
+        connectedSubPortTypes = undefined;
+        mountedPort?.callbacks?.onDisconnectFrom?.();
+      },
+    },
     mountInputPort(port: HsUnitInputPort | undefined) {
       if (mountedPort?.audioInput) {
         audioInputNode.disconnect(mountedPort.audioInput.node);
       }
+      if (connectedSubPortTypes) {
+        mountedPort?.callbacks?.onDisconnectFrom?.();
+      }
       mountedPort = port;
       connectMountedPort(mountedPort);
+      if (connectedSubPortTypes) {
+        connectedSubPortTypes = getMountedSubPortTypes(
+          connectedHasAudioOutput,
+        );
+        subPortTypeListeners.forEach((listener) => {
+          listener(connectedSubPortTypes!);
+        });
+        mountedPort?.callbacks?.onConnectedFrom?.(connectedSubPortTypes);
+      }
       return () => {
         if (mountedPort === port) {
           if (mountedPort?.audioInput) {
             audioInputNode.disconnect(mountedPort.audioInput.node);
+          }
+          if (connectedSubPortTypes) {
+            mountedPort?.callbacks?.onDisconnectFrom?.();
+            subPortTypeListeners.forEach((listener) => {
+              listener([]);
+            });
           }
           mountedPort = undefined;
         }

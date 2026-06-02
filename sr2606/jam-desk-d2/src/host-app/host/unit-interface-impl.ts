@@ -6,6 +6,7 @@ import {
 } from "@/host-app/host/host-core";
 import {
   HsUnitInputPort,
+  HsUnitInputPortCallbacks,
   HsUnitInputPortPre,
   HsUnitInputPortPreHandlers,
   HsUnitInstance,
@@ -15,8 +16,12 @@ import {
 export function createHsUnitInputPortPre(): HsUnitInputPortPre {
   const audioNode = gAudioContext.createGain();
   let handlers: HsUnitInputPortPreHandlers | undefined;
+  let callbacks: HsUnitInputPortCallbacks | undefined;
   return {
     audioInput: { node: audioNode },
+    setCallbacks(_callbacks: HsUnitInputPortCallbacks) {
+      callbacks = _callbacks;
+    },
     setHandlers(_handlers: HsUnitInputPortPreHandlers) {
       handlers = _handlers;
     },
@@ -24,6 +29,14 @@ export function createHsUnitInputPortPre(): HsUnitInputPortPre {
       return {
         audioInput: { node: audioNode },
         ...handlers,
+        callbacks: {
+          onConnectedFrom(subPortTypes) {
+            callbacks?.onConnectedFrom?.(subPortTypes);
+          },
+          onDisconnectFrom() {
+            callbacks?.onDisconnectFrom?.();
+          },
+        },
       };
     },
   };

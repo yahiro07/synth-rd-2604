@@ -1,10 +1,31 @@
+import { SubPortType, UnitOutputPort } from "@/contract/unit-interfaces";
 import { HsUnitInputPort, HsUnitOutputPort } from "@/host-app/host/host-types";
+
+function getConnectedSubPortTypes(
+  port: HsUnitInputPort,
+  hasAudioOutput: boolean,
+): SubPortType[] {
+  if (port.getSubPortTypes) {
+    return port.getSubPortTypes(hasAudioOutput);
+  }
+  return [
+    hasAudioOutput && port.audioInput ? "audio" : undefined,
+    port.noteInput ? "note" : undefined,
+    port.cvGateInput ? "cvGate" : undefined,
+    port.clockInput ? "clock" : undefined,
+    port.stateInput ? "state" : undefined,
+    port.parametersInput ? "parameters" : undefined,
+    port.samplerPadInput ? "samplerPad" : undefined,
+  ].filter((type): type is SubPortType => !!type);
+}
 
 export function createHsUnitOutputPortImpl(
   fnCreateGainNode: () => GainNode,
 ): HsUnitOutputPort {
   let connectedInputPort: HsUnitInputPort | null;
   let audioRelayNode: AudioNode | null;
+  let callbacks: Parameters<UnitOutputPort["setCallbacks"]>[0] | undefined;
+  let unsubscribeSubPortTypes: (() => void) | undefined;
 
   const core = {
     connectTo(port: HsUnitInputPort) {
@@ -15,19 +36,37 @@ export function createHsUnitOutputPortImpl(
         audioRelayNode.connect(port.audioInput?.node);
       }
       connectedInputPort = port;
+      const subPortTypes = getConnectedSubPortTypes(port, !!audioRelayNode);
+      callbacks?.onConnectedTo?.(subPortTypes);
+      port.callbacks?.onConnectedFrom?.(subPortTypes);
+      unsubscribeSubPortTypes = port.subscribeSubPortTypes?.(
+        (nextSubPortTypes) => {
+          if (connectedInputPort === port) {
+            callbacks?.onConnectedTo?.(nextSubPortTypes);
+          }
+        },
+      );
     },
     disconnectFrom(port: HsUnitInputPort) {
+      const wasConnected = connectedInputPort === port;
       if (audioRelayNode && port.audioInput) {
         audioRelayNode.disconnect(port.audioInput?.node);
       }
-      if (connectedInputPort === port) {
+      if (wasConnected) {
+        unsubscribeSubPortTypes?.();
+        unsubscribeSubPortTypes = undefined;
         connectedInputPort = null;
+        callbacks?.onDisconnectTo?.();
+        port.callbacks?.onDisconnectFrom?.();
       }
     },
   };
   return {
     connectTo: core.connectTo,
     disconnectFrom: core.disconnectFrom,
+    setCallbacks(_callbacks) {
+      callbacks = _callbacks;
+    },
     audioOutput: {
       get node() {
         audioRelayNode ??= fnCreateGainNode();

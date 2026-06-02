@@ -134,6 +134,18 @@ const createKeyboardUnit: ReactUnitTemplateFn = (unitInterface) => {
 
 const createTwoPortsKeyboardUnit: ReactUnitTemplateFn = (unitInterface) => {
   const outputPorts = unitInterface.createMultiChannelOutputPorts(2);
+
+  if (0) {
+    //debug
+    outputPorts.forEach((port, i) => {
+      port.setCallbacks({
+        onConnectedTo(subPortTypes) {
+          console.log(`twoPortKeyboard ch${i} connected to`, subPortTypes);
+        },
+      });
+    });
+  }
+
   const actions = {
     async noteOn(ch: number, note: number) {
       if (gAudioContext.state === "suspended") {
@@ -177,6 +189,17 @@ const createMixerUnit: ReactUnitTemplateFn = (unitInterface) => {
   const destinationNode = unitInterface.primaryOutputPort.audioOutput.node;
 
   const inputPorts = unitInterface.createMultiChannelInputPorts(4);
+
+  if (0) {
+    //debug
+    inputPorts.forEach((port, i) => {
+      port.setCallbacks({
+        onConnectedFrom(subPortTypes) {
+          console.log(`mixer ch${i} connected from`, subPortTypes);
+        },
+      });
+    });
+  }
 
   const gainNodes = inputPorts.map((port) => {
     const gainNode = audioContext.createGain();

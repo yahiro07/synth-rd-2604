@@ -8,6 +8,7 @@ import {
   ParametersPort,
   SamplerPadPort,
   StatePort,
+  SubPortType,
   UnitInputPort,
   UnitOutputPort,
 } from "@/contract/unit-interfaces";
@@ -21,6 +22,10 @@ export type HsUnitInputPortPreHandlers = {
   samplerPadInput?: SamplerPadPort;
 };
 
+export type HsUnitInputPortCallbacks = Parameters<
+  UnitInputPort["setCallbacks"]
+>[0];
+
 export type HsUnitInputPortPre = UnitInputPort & {
   emit(): HsUnitInputPort;
 };
@@ -33,6 +38,11 @@ export type HsUnitInputPort = {
   stateInput?: StatePort;
   parametersInput?: ParametersPort;
   samplerPadInput?: SamplerPadPort;
+  callbacks?: HsUnitInputPortCallbacks;
+  getSubPortTypes?: (hasAudioOutput: boolean) => SubPortType[];
+  subscribeSubPortTypes?: (
+    listener: (subPortTypes: SubPortType[]) => void,
+  ) => () => void;
 };
 
 export type HsUnitOutputPort = UnitOutputPort & {
