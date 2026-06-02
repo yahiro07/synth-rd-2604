@@ -22,7 +22,6 @@ export const createMasterClockUnit: ReactUnitTemplateFn = (unitInterface) => {
         clockOutput.start?.();
         tickDriver.start({
           processStep() {
-            console.log("master clock tick", stepIndex); //ok
             clockOutput.step?.(stepIndex++);
           },
         });

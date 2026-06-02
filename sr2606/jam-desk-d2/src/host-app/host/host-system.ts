@@ -3,6 +3,7 @@ import { HsUnitInputPort, HsUnitInstance } from "@/host-app/host/host-types";
 
 function createHostSystem() {
   const units: Record<string, HsUnitInstance> = {};
+  const unitRegisteredListeners = new Set<(unitId: string) => void>();
 
   const audioDestinationUnitInputPort: HsUnitInputPort = {
     audioInput: {
@@ -16,10 +17,19 @@ function createHostSystem() {
     },
     registerUnitInstance(unit: HsUnitInstance) {
       units[unit.unitId] = unit;
+      for (const listener of unitRegisteredListeners) {
+        listener(unit.unitId);
+      }
       return () => {
         if (units[unit.unitId] === unit) {
           delete units[unit.unitId];
         }
+      };
+    },
+    onUnitRegistered(listener: (unitId: string) => void) {
+      unitRegisteredListeners.add(listener);
+      return () => {
+        unitRegisteredListeners.delete(listener);
       };
     },
     getConnectionTargetPort(destSpec: string): HsUnitInputPort | undefined {

@@ -11,19 +11,44 @@ function connectUnitToDestPort(
     outputPortIndex !== undefined
       ? unit.outputPorts?.[outputPortIndex]
       : unit.outputPort;
-  const destPort = hostSystem.getConnectionTargetPort(destSpec);
-  if (srcPort && destPort) {
-    const srcSpec =
-      outputPortIndex !== undefined
-        ? `${unit.unitId}.port${outputPortIndex}`
-        : `${unit.unitId}`;
-    console.log(`connecting ${srcSpec} --> ${destSpec}`);
-    srcPort.connectTo(destPort);
-    return () => {
-      console.log(`disconnecting ${srcSpec} --> ${destSpec}`);
-      srcPort.disconnectFrom(destPort);
-    };
-  }
+
+  const srcSpec =
+    outputPortIndex !== undefined
+      ? `${unit.unitId}.port${outputPortIndex}`
+      : `${unit.unitId}`;
+
+  let connected = false;
+  let cleanupFromPort: (() => void) | undefined;
+
+  const tryConnect = () => {
+    if (connected) return true;
+    const destPort = hostSystem.getConnectionTargetPort(destSpec);
+    if (srcPort && destPort) {
+      console.log(`connecting ${srcSpec} --> ${destSpec}`);
+      srcPort.connectTo(destPort);
+      connected = true;
+      cleanupFromPort = () => {
+        console.log(`disconnecting ${srcSpec} --> ${destSpec}`);
+        srcPort.disconnectFrom(destPort);
+      };
+      return true;
+    }
+    return false;
+  };
+
+  tryConnect();
+
+  const unsubscribe = hostSystem.onUnitRegistered((registeredUnitId) => {
+    const destUnitId = destSpec.split(".")[0];
+    if (destUnitId === registeredUnitId) {
+      tryConnect();
+    }
+  });
+
+  return () => {
+    unsubscribe();
+    cleanupFromPort?.();
+  };
 }
 
 export function connectUnitToDestination(

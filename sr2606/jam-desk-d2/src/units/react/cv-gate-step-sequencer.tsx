@@ -9,13 +9,15 @@ type SequencerState = {
 };
 
 const CV_PER_OCTAVE = 0.1;
-const CENTER_CV = 0.5; // C4
+const CENTER_CV = 0.4; // C3
 
 export const createCvGateStepSequencerUnit: ReactUnitTemplateFn = (
   unitInterface,
 ) => {
   const store = createStore<SequencerState>({
-    steps: Array(8).fill(0.5),
+    steps: Array(8)
+      .fill(0)
+      .map(() => Math.random()),
     currentStep: -1,
   });
 
@@ -24,8 +26,8 @@ export const createCvGateStepSequencerUnit: ReactUnitTemplateFn = (
   unitInterface.primaryInputPort.setHandlers({
     clockInput: {
       step(stepIndex) {
-        console.log("cvGateSequencer step", stepIndex);
-        const localStep = stepIndex % 8;
+        if (stepIndex % 2 === 1) return;
+        const localStep = (stepIndex >>> 1) % 8;
         store.setCurrentStep(localStep);
 
         const knobValue = store.state.steps[localStep];
