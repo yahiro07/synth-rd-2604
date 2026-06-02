@@ -5,6 +5,14 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   appType: "mpa",
+  build: {
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        "iframe-osc": "units/osc/index.html",
+      },
+    },
+  },
   resolve: {
     preserveSymlinks: true,
     tsconfigPaths: true,
