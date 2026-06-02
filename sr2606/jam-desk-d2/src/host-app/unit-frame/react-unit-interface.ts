@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { UnitInterface } from "@/contract/unit-interfaces";
 import { HsUnitInstance } from "@/host-app/host/host-types";
-import { createUnitInterfaceForIframe } from "@/host-app/host/iframe-unit-interface-impl";
+import { createUnitInterface } from "@/host-app/host/unit-interface-impl";
 
 type PlainComponentFn = () => ReactNode;
 
@@ -18,7 +18,7 @@ export function instantiateReactUnit(
   unitId: string,
 ): ReactUnitInstance {
   let unitInstance: HsUnitInstance | undefined;
-  const unitInterface = createUnitInterfaceForIframe(unitId, (instance) => {
+  const unitInterface = createUnitInterface(unitId, (instance) => {
     unitInstance = instance;
   });
   const { RenderUi } = templateFn(unitInterface);

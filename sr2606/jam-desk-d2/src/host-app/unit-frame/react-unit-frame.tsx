@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo } from "react";
 import { hostSystem } from "@/host-app/host/host-system";
+import { connectUnitToDestination } from "@/host-app/host/unit-connecter";
 import {
   instantiateReactUnit,
   ReactUnitTemplateFn,
-} from "@/host-app/react-units/react-unit-interface";
-import { connectUnitToDestination } from "@/host-app/ui/unit-connecter";
-import { UnitIdsBox } from "@/host-app/ui/unit-ids-box";
+} from "@/host-app/unit-frame/react-unit-interface";
+import { UnitIdsBox } from "@/host-app/unit-frame/unit-ids-box";
 
 export const ReactUnitFrame = ({
   unitId,

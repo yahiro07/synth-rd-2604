@@ -1,8 +1,8 @@
-import "../../page.css";
+import "../../../page.css";
 import "beams/ax-ui/utility-classes.css";
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
 import { UnitInterface } from "@/contract/unit-interfaces";
-import { createOscillatorUnitCore } from "@/host-app/react-units/oscillator-unit-core";
+import { createOscillatorUnitCore } from "@/units/common/oscillator-unit-core";
 
 const unitInterface = (window as any).unitInterface as
   | UnitInterface

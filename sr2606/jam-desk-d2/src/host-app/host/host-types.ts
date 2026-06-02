@@ -40,17 +40,7 @@ export type HsUnitOutputPort = UnitOutputPort & {
   disconnectFrom(port: HsUnitInputPort): void;
 };
 
-// export type HsUnitInstance = {
-//   outputPort: UnitOutputPort;
-//   inputPort: HsUnitInputPort;
-//   outputPorts?: UnitOutputPort[];
-//   inputPorts?: HsUnitInputPort[];
-//   hostCallbacks?: HostCallbacks;
-//   RenderUi?: () => ReactNode;
-// };
-
 export type HsUnitInstance = {
-  // unitClassKey: string;
   unitId: string;
   outputPort: HsUnitOutputPort;
   inputPort: HsUnitInputPort;
@@ -59,7 +49,3 @@ export type HsUnitInstance = {
   hostCallbacks?: HostCallbacks;
   RenderUi?: () => ReactNode;
 };
-
-// export type UnitClassFn = (
-//   outputPortCreator: OutputPortCreator,
-// ) => HsUnitInstance;

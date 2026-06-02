@@ -29,7 +29,7 @@ export function createHsUnitInputPortPre(): HsUnitInputPortPre {
   };
 }
 
-export function createUnitInterfaceForIframe(
+export function createUnitInterface(
   unitId: string,
   createdCallback: (unitInstance: HsUnitInstance) => void,
 ): UnitInterface {

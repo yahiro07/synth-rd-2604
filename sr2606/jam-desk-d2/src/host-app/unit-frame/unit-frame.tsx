@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
 import { hostSystem } from "@/host-app/host/host-system";
-import { createUnitInterfaceForIframe } from "@/host-app/host/iframe-unit-interface-impl";
-import { createUnitAdapter } from "@/host-app/ui/unit-adapter";
-import { connectUnitToDestination } from "@/host-app/ui/unit-connecter";
-import { UnitIdsBox } from "@/host-app/ui/unit-ids-box";
+import { createUnitAdapter } from "@/host-app/host/unit-adapter";
+import { connectUnitToDestination } from "@/host-app/host/unit-connecter";
+import { createUnitInterface } from "@/host-app/host/unit-interface-impl";
+import { UnitIdsBox } from "@/host-app/unit-frame/unit-ids-box";
 
 function createUnitFrameModel(unitId: string) {
   const unitAdapter = createUnitAdapter(unitId);
@@ -15,7 +15,7 @@ function createUnitFrameModel(unitId: string) {
       let unmountUnit: (() => void) | null = null;
 
       const win = iframe.contentWindow;
-      (win as any).unitInterface = createUnitInterfaceForIframe(
+      (win as any).unitInterface = createUnitInterface(
         unitId,
         (unitInstance) => {
           unmountUnit = unitAdapter.mountUnitInstance(unitInstance);

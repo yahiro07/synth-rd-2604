@@ -2,9 +2,9 @@ import "../page.css";
 import "beams/ax-ui/utility-classes.css";
 //
 import { mountAppRoot } from "beams/ax-react/mount-app-root";
-import { reactUnitFactories } from "@/host-app/react-units/units";
-import { ReactUnitFrame } from "@/host-app/ui/react-unit-frame";
-import { UnitFrame } from "@/host-app/ui/unit-frame";
+import { ReactUnitFrame } from "@/host-app/unit-frame/react-unit-frame";
+import { UnitFrame } from "@/host-app/unit-frame/unit-frame";
+import { reactUnitFactories } from "@/units/react/units";
 
 const App = () => {
   const uf = reactUnitFactories;

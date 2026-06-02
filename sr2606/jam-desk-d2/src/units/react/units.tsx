@@ -1,13 +1,13 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import { createStore } from "snap-store";
 import { gAudioContext } from "@/host-app/host/host-core";
+import { ReactUnitTemplateFn } from "@/host-app/unit-frame/react-unit-interface";
+import { Knob } from "@/shared/components/knob";
+import { UpperLabel } from "@/shared/components/upper-label";
 import {
   createOscillatorUnitCore,
   OscParameters,
-} from "@/host-app/react-units/oscillator-unit-core";
-import { ReactUnitTemplateFn } from "@/host-app/react-units/react-unit-interface";
-import { Knob } from "@/shared/components/knob";
-import { UpperLabel } from "@/shared/components/upper-label";
+} from "@/units/common/oscillator-unit-core";
 
 const createOscUnit: ReactUnitTemplateFn = (unitInterface) => {
   const oscillatorCore = createOscillatorUnitCore(
@@ -239,5 +239,3 @@ export const reactUnitFactories = {
   mixer: createMixerUnit,
   twoPortsKeyboard: createTwoPortsKeyboardUnit,
 };
-
-// export type UnitClassKey = keyof typeof unitFactories;
