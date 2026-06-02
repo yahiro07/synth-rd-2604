@@ -46,11 +46,18 @@ const App = () => {
           />
         </div>
       </div>
-      <ReactUnitFrame
-        unitId="twoPortsKeyboard1"
-        unitTemplateFn={uf.twoPortsKeyboard}
-        destSpec={["osc1", "osc2"]}
-      />
+      <div className="flex-h gap-4">
+        <ReactUnitFrame
+          unitId="twoPortsKeyboard1"
+          unitTemplateFn={uf.twoPortsKeyboard}
+          destSpec={["osc1", "osc2"]}
+        />
+        <ReactUnitFrame
+          unitId="paramController1"
+          unitTemplateFn={uf.parameterController}
+          destSpec="osc2"
+        />
+      </div>
     </div>
   );
 };
