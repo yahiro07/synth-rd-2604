@@ -1,9 +1,38 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { hostSystem } from "@/host-app/host/host-system";
 import { createUnitInterfaceForIframe } from "@/host-app/host/iframe-unit-interface-impl";
 import { createUnitAdapter } from "@/host-app/ui/unit-adapter";
 import { connectUnitToDestination } from "@/host-app/ui/unit-connecter";
-import { UnitInstanceInHostSide } from "@/shared/contract/unit-interfaces";
+
+function createUnitFrameModel(unitId: string) {
+  const unitAdapter = createUnitAdapter(unitId);
+
+  return {
+    onIframeMounted(iframe: HTMLIFrameElement) {
+      const unregisterUnitAdapter =
+        hostSystem.registerUnitInstance(unitAdapter);
+      let unmountUnit: (() => void) | null = null;
+
+      const win = iframe.contentWindow;
+      (win as any).unitInterface = createUnitInterfaceForIframe(
+        unitId,
+        (unitInstance) => {
+          unmountUnit = unitAdapter.mountUnitInstance(unitInstance);
+        },
+      );
+      return () => {
+        unregisterUnitAdapter();
+        unmountUnit?.();
+      };
+    },
+    setDestSpec(destSpec?: string | string[]) {
+      if (destSpec) {
+        return connectUnitToDestination(unitAdapter, destSpec);
+      }
+    },
+    dispose() {},
+  };
+}
 
 export const UnitFrame = ({
   unitId,
@@ -15,36 +44,14 @@ export const UnitFrame = ({
   destSpec?: string | string[];
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const unitAdapter = useMemo(() => createUnitAdapter(unitId), [unitId]);
-  const [unitInstance, setUnitInstance] =
-    useState<UnitInstanceInHostSide | null>(null);
-
+  const model = useMemo(() => createUnitFrameModel(unitId), [unitId]);
   useEffect(() => {
-    return hostSystem.registerUnitInstance(unitAdapter);
-  }, [unitAdapter]);
-
+    return model.setDestSpec(destSpec);
+  }, [destSpec, model]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: add pageUrl to deps
   useEffect(() => {
-    if (unitInstance) {
-      console.log("created unit instance in iframe", unitInstance);
-      return unitAdapter.mountUnitInstance(unitInstance);
-    }
-  }, [unitAdapter, unitInstance]);
-
-  useEffect(() => {
-    if (destSpec) {
-      return connectUnitToDestination(unitAdapter, destSpec);
-    }
-  }, [destSpec, unitAdapter]);
-
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-    const win = iframe.contentWindow;
-    (win as any).unitInterface = createUnitInterfaceForIframe(
-      unitId,
-      setUnitInstance,
-    );
-  }, [unitId]);
+    return model.onIframeMounted(iframeRef.current!);
+  }, [model, pageUrl]);
   return (
     <iframe
       ref={iframeRef}
