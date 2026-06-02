@@ -1,8 +1,12 @@
 import { seqNumbers } from "beams/ax/array-utils";
 import { createStore } from "snap-store";
 import { createOutputPort, gAudioContext } from "@/host-app/host/host-core";
-import { createOscillatorUnitCore } from "@/host-app/react-units/oscillator-unit-core";
+import {
+  createOscillatorUnitCore,
+  OscParameters,
+} from "@/host-app/react-units/oscillator-unit-core";
 import { Knob } from "@/shared/components/knob";
+import { UpperLabel } from "@/shared/components/upper-label";
 import { UnitInstance } from "@/shared/contract/unit-interfaces";
 
 function createOscUnit(): UnitInstance {
@@ -11,6 +15,22 @@ function createOscUnit(): UnitInstance {
     gAudioContext,
     outputPort.audioOutput.node,
   );
+  const store = createStore<OscParameters>({
+    wave: 0,
+    octave: 0.5,
+    volume: 0.5,
+  });
+  store.subscribe((attrs) => {
+    if (attrs.wave !== undefined) {
+      oscillatorCore.setParameter("wave", attrs.wave);
+    }
+    if (attrs.octave !== undefined) {
+      oscillatorCore.setParameter("octave", attrs.octave);
+    }
+    if (attrs.volume !== undefined) {
+      oscillatorCore.setParameter("volume", attrs.volume);
+    }
+  });
   return {
     outputPort,
     inputPort: {
@@ -20,9 +40,39 @@ function createOscUnit(): UnitInstance {
       },
     },
     RenderUi() {
+      const state = store.useSnapshot();
       return (
-        <div className="bg-gray-200 w-[200px] h-[100px] flex-c">
-          Oscillator Unit
+        <div className="bg-gray-200 w-[200px] h-[100px] flex-vc gap-3">
+          <h4>Oscillator</h4>
+          <div className="flex-h text-[#444] gap-3">
+            <UpperLabel label="wave">
+              <Knob
+                value={state.wave}
+                onChange={store.setWave}
+                min={0}
+                max={1}
+                step={0.333}
+              />
+            </UpperLabel>
+            <UpperLabel label="oct">
+              <Knob
+                value={state.octave}
+                onChange={store.setOctave}
+                min={0}
+                max={1}
+                step={0.25}
+              />
+            </UpperLabel>
+            <UpperLabel label="vol">
+              <Knob
+                value={state.volume}
+                onChange={store.setVolume}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+            </UpperLabel>
+          </div>
         </div>
       );
     },

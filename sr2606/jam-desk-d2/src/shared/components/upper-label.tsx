@@ -14,7 +14,7 @@ export const UpperLabel = ({
     <div className="relative">
       {children}
       <div
-        className="absolute left-0 w-full text-white flex-c text-[9px] font-bold"
+        className="absolute left-0 w-full flex-c text-[9px] font-bold"
         style={{ top: npx(yOffset - 13) }}
       >
         {label}
