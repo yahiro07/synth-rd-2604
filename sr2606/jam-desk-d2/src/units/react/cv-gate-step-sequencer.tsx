@@ -8,8 +8,8 @@ type SequencerState = {
   currentStep: number;
 };
 
-const CV_PER_OCTAVE = 0.1;
-const CENTER_CV = 0.4; // C3
+const cvPerOctave = 0.1;
+const cvCenter = 0.4; // C3
 
 export const createCvGateStepSequencerUnit: ReactUnitTemplateFn = (
   unitInterface,
@@ -33,7 +33,7 @@ export const createCvGateStepSequencerUnit: ReactUnitTemplateFn = (
         const knobValue = store.state.steps[localStep];
         // 0~1 -> -12~12 semitones
         const semitones = knobValue * 24 - 12;
-        const cv = CENTER_CV + (semitones / 12) * CV_PER_OCTAVE;
+        const cv = cvCenter + (semitones / 12) * cvPerOctave;
 
         output.setCv(cv);
         output.setGate(true);

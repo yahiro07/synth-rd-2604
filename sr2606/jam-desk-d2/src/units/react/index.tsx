@@ -1,3 +1,4 @@
+import { createClockDividerUnit } from "@/units/react/clock-divider";
 import { createCvGateOscUnit } from "@/units/react/cv-gate-osc";
 import { createCvGateStepSequencerUnit } from "@/units/react/cv-gate-step-sequencer";
 import { createKeyboardUnit } from "@/units/react/keyboard";
@@ -18,4 +19,5 @@ export const reactUnitFactories = {
   cvGateOsc: createCvGateOscUnit,
   cvGateStepSequencer: createCvGateStepSequencerUnit,
   masterClock: createMasterClockUnit,
+  clockDivider: createClockDividerUnit,
 };

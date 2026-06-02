@@ -14,7 +14,7 @@ export const Button = (props: {
       onClick={props.onClick}
       disabled={props.disabled}
       className={clsx(
-        "min-w-[60px] h-[36px] flex-c bg-gray-400 text-white border border-gray-600",
+        "min-w-[40px] h-[36px] flex-c bg-gray-400 text-white border border-gray-600",
         props.active && "bg-sky-600",
       )}
       style={{

@@ -14,7 +14,7 @@ const App = () => {
         <ReactUnitFrame
           unitId="masterClock1"
           unitTemplateFn={uf.masterClock}
-          destSpec="cvGateStepSequencer1"
+          destSpec="clockDivider1"
         />
         <ReactUnitFrame
           unitId="mixer1"
@@ -61,7 +61,6 @@ const App = () => {
           destSpec="osc2"
         />
       </div>
-
       <div className="flex-ha gap-4">
         <ReactUnitFrame
           unitId="twoPortsKeyboard1"
@@ -77,6 +76,14 @@ const App = () => {
           unitId="cvGateStepSequencer1"
           unitTemplateFn={uf.cvGateStepSequencer}
           destSpec="cvGateOsc1"
+        />
+      </div>
+
+      <div className="flex-ha gap-4">
+        <ReactUnitFrame
+          unitId="clockDivider1"
+          unitTemplateFn={uf.clockDivider}
+          destSpec="cvGateStepSequencer1"
         />
       </div>
     </div>
