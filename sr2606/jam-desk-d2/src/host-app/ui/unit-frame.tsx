@@ -3,6 +3,7 @@ import { hostSystem } from "@/host-app/host/host-system";
 import { createUnitInterfaceForIframe } from "@/host-app/host/iframe-unit-interface-impl";
 import { createUnitAdapter } from "@/host-app/ui/unit-adapter";
 import { connectUnitToDestination } from "@/host-app/ui/unit-connecter";
+import { UnitIdsBox } from "@/host-app/ui/unit-ids-box";
 
 function createUnitFrameModel(unitId: string) {
   const unitAdapter = createUnitAdapter(unitId);
@@ -53,12 +54,14 @@ export const UnitFrame = ({
     return model.onIframeMounted(iframeRef.current!);
   }, [model, pageUrl]);
   return (
-    <iframe
-      ref={iframeRef}
-      src={pageUrl}
-      width="200"
-      height="100"
-      title={unitId}
-    />
+    <UnitIdsBox unitId={unitId} destSpec={destSpec}>
+      <iframe
+        ref={iframeRef}
+        src={pageUrl}
+        width="200"
+        height="100"
+        title={unitId}
+      />
+    </UnitIdsBox>
   );
 };
