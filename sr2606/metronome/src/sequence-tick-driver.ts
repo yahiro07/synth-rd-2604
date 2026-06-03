@@ -1,7 +1,12 @@
 export type SequencerCallbacks = {
   handleStart?(): void;
   //480ppq based
-  processScheduling(ppqFrom: number, ppqTo: number, bpm: number): void;
+  processScheduling(
+    startTime: number,
+    ppqFrom: number,
+    ppqTo: number,
+    bpm: number,
+  ): void;
 };
 
 export type SequencerTickDriver = {
@@ -19,16 +24,18 @@ function mapTimeToPpq(timeSec: number, bpm: number): number {
 
 function callSequencerScheduling(
   sequencer: SequencerCallbacks,
+  startTime: number,
   timeFrom: number,
   timeTo: number,
   bpm: number,
 ) {
   const ppqFrom = mapTimeToPpq(timeFrom, bpm);
   const ppqTo = mapTimeToPpq(timeTo, bpm);
-  sequencer.processScheduling(ppqFrom, ppqTo, bpm);
+  sequencer.processScheduling(startTime, ppqFrom, ppqTo, bpm);
 }
 
 export function createSequencerTickDriver(
+  audioContext: AudioContext,
   intervalMs: number = 100,
   lookaheadMs: number = 25,
 ): SequencerTickDriver {
@@ -38,7 +45,8 @@ export function createSequencerTickDriver(
 
   let timerId: NodeJS.Timeout | null = null;
 
-  const getCurrentTime = () => Date.now() / 1000;
+  // const getCurrentTime = () => Date.now() / 1000;
+  const getCurrentTime = () => audioContext.currentTime;
 
   return {
     setBpm(bpm: number) {
@@ -52,13 +60,25 @@ export function createSequencerTickDriver(
       let timePos = 0;
       {
         const timePosNext = intervalSec + lookaheadSec;
-        callSequencerScheduling(sequencer, timePos, timePosNext, state.bpm);
+        callSequencerScheduling(
+          sequencer,
+          startTime,
+          timePos,
+          timePosNext,
+          state.bpm,
+        );
         timePos = timePosNext;
       }
       timerId = setInterval(() => {
         const relativeTime = getRelativeTime();
         const timePosNext = relativeTime + intervalSec + lookaheadSec;
-        callSequencerScheduling(sequencer, timePos, timePosNext, state.bpm);
+        callSequencerScheduling(
+          sequencer,
+          startTime,
+          timePos,
+          timePosNext,
+          state.bpm,
+        );
         timePos = timePosNext;
       }, intervalMs);
     },

@@ -9,7 +9,10 @@ import {
   createSequencerTickDriver,
   SequencerCallbacks,
 } from "@/sequence-tick-driver";
-import { makeStepSchedulingSource } from "@/step-scheduling-source";
+import {
+  makeStepSchedulingSource,
+  StepSchedulingSource,
+} from "@/step-scheduling-source";
 
 const audioContext = new AudioContext();
 
@@ -19,38 +22,50 @@ async function resumeIfNeed() {
   }
 }
 
-function playBeep(freq: number, time: number, duration: number) {
+function playBeep(
+  freq: number,
+  time: number,
+  duration: number,
+  volume: number,
+  wave: OscillatorType = "sine",
+) {
   const oscillatorNode = audioContext.createOscillator();
   oscillatorNode.frequency.setValueAtTime(freq, time);
-  oscillatorNode.type = "sine";
-  oscillatorNode.connect(audioContext.destination);
+  oscillatorNode.type = wave;
+  const gainNode = audioContext.createGain();
+  gainNode.gain.setValueAtTime(volume, time);
+  oscillatorNode.connect(gainNode);
+  gainNode.connect(audioContext.destination);
   oscillatorNode.start();
   oscillatorNode.stop(time + duration);
 }
 
-let startTime = 0;
+function sequencerCore_scheduleSteps(source: StepSchedulingSource) {
+  const { stepPoints, stepDuration } = source;
+  for (const { time, stepIndex } of stepPoints) {
+    if (stepIndex % 4 === 0) {
+      const freq = 80;
+      playBeep(freq, time, stepDuration * 0.5, 1);
+    } else {
+      const freq = 110;
+      playBeep(freq, time, stepDuration * 0.5, 0.2, "sawtooth");
+    }
+  }
+}
 
 const sequencer: SequencerCallbacks = {
-  handleStart() {
-    startTime = audioContext.currentTime;
-  },
-  processScheduling(ppqFrom, ppqTo, bpm) {
-    const { stepPoints, stepDuration } = makeStepSchedulingSource(
+  processScheduling(startTime, ppqFrom, ppqTo, bpm) {
+    const stepSchedulingSource = makeStepSchedulingSource(
+      startTime,
       ppqFrom,
       ppqTo,
       bpm,
     );
-    console.log({ ppqFrom, ppqTo, bpm, stepPoints, stepDuration });
-
-    for (const { time, stepIndex } of stepPoints) {
-      if (stepIndex % 4 === 0) {
-        const freq = 440;
-        playBeep(freq, startTime + time, stepDuration * 0.5);
-      }
-    }
+    // console.log({ ppqFrom, ppqTo, bpm, stepPoints, stepDuration });
+    sequencerCore_scheduleSteps(stepSchedulingSource);
   },
 };
-const sequenceTickDriver = createSequencerTickDriver();
+const sequenceTickDriver = createSequencerTickDriver(audioContext);
 
 const store = createStore({ playing: false, bpm: 120 });
 

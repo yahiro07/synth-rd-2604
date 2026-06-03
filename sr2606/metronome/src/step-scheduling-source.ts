@@ -1,4 +1,4 @@
-type StepSchedulingSource = {
+export type StepSchedulingSource = {
   stepPoints: {
     time: number; //sec from playback start
     stepIndex: number;
@@ -7,6 +7,7 @@ type StepSchedulingSource = {
 };
 
 export function makeStepSchedulingSource(
+  startTime: number,
   ppqFrom: number,
   ppqTo: number,
   bpm: number,
@@ -24,7 +25,7 @@ export function makeStepSchedulingSource(
 
   const stepPoints: StepSchedulingSource["stepPoints"] = [];
   for (let i = i0; i < i1; i++) {
-    const time = i * stepDuration;
+    const time = startTime + i * stepDuration;
     stepPoints.push({ time, stepIndex: i });
   }
 
