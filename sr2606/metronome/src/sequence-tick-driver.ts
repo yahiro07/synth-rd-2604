@@ -1,5 +1,5 @@
 export type SequencerCallbacks = {
-  handleStart?(startTime: number): void;
+  handleStart?(): void;
   //480ppq based
   processScheduling(ppqFrom: number, ppqTo: number, bpm: number): void;
 };
@@ -29,7 +29,6 @@ function callSequencerScheduling(
 }
 
 export function createSequencerTickDriver(
-  audioContext: AudioContext,
   intervalMs: number = 100,
   lookaheadMs: number = 25,
 ): SequencerTickDriver {
@@ -39,35 +38,27 @@ export function createSequencerTickDriver(
 
   let timerId: NodeJS.Timeout | null = null;
 
+  const getCurrentTime = () => Date.now() / 1000;
+
   return {
     setBpm(bpm: number) {
       state.bpm = bpm;
     },
     start(sequencer: SequencerCallbacks) {
-      const startTime = audioContext.currentTime;
-      sequencer.handleStart?.(startTime);
-      const getRelativeTime = () => audioContext.currentTime - startTime;
+      const startTime = getCurrentTime();
+      sequencer.handleStart?.();
+      const getRelativeTime = () => getCurrentTime() - startTime;
 
       let timePos = 0;
       {
         const timePosNext = intervalSec + lookaheadSec;
-        callSequencerScheduling(
-          sequencer,
-          timePos,
-          timePosNext,
-          state.bpm,
-        );
+        callSequencerScheduling(sequencer, timePos, timePosNext, state.bpm);
         timePos = timePosNext;
       }
       timerId = setInterval(() => {
         const relativeTime = getRelativeTime();
         const timePosNext = relativeTime + intervalSec + lookaheadSec;
-        callSequencerScheduling(
-          sequencer,
-          timePos,
-          timePosNext,
-          state.bpm,
-        );
+        callSequencerScheduling(sequencer, timePos, timePosNext, state.bpm);
         timePos = timePosNext;
       }, intervalMs);
     },

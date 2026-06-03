@@ -12,7 +12,6 @@ import {
 import { makeStepSchedulingSource } from "@/step-scheduling-source";
 
 const audioContext = new AudioContext();
-let playbackStartTime = 0;
 
 async function resumeIfNeed() {
   if (audioContext.state === "suspended") {
@@ -29,9 +28,11 @@ function playBeep(freq: number, time: number, duration: number) {
   oscillatorNode.stop(time + duration);
 }
 
+let startTime = 0;
+
 const sequencer: SequencerCallbacks = {
-  handleStart(startTime) {
-    playbackStartTime = startTime;
+  handleStart() {
+    startTime = audioContext.currentTime;
   },
   processScheduling(ppqFrom, ppqTo, bpm) {
     const { stepPoints, stepDuration } = makeStepSchedulingSource(
@@ -44,12 +45,12 @@ const sequencer: SequencerCallbacks = {
     for (const { time, stepIndex } of stepPoints) {
       if (stepIndex % 4 === 0) {
         const freq = 440;
-        playBeep(freq, playbackStartTime + time, stepDuration * 0.5);
+        playBeep(freq, startTime + time, stepDuration * 0.5);
       }
     }
   },
 };
-const sequenceTickDriver = createSequencerTickDriver(audioContext);
+const sequenceTickDriver = createSequencerTickDriver();
 
 const store = createStore({ playing: false, bpm: 120 });
 
