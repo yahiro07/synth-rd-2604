@@ -36,30 +36,27 @@ function callSequencerScheduling(
 
 export function createSequencerTickDriver(
   audioContext: AudioContext,
-  intervalMs: number = 100,
-  lookaheadMs: number = 25,
+  intervalMs: number = 25,
+  lookaheadMs: number = 100,
 ): SequencerTickDriver {
   const state = { bpm: 120 };
-  const intervalSec = intervalMs / 1000;
   const lookaheadSec = lookaheadMs / 1000;
 
   let timerId: NodeJS.Timeout | null = null;
-
-  // const getCurrentTime = () => Date.now() / 1000;
-  const getCurrentTime = () => audioContext.currentTime;
 
   return {
     setBpm(bpm: number) {
       state.bpm = bpm;
     },
     start(sequencer: SequencerCallbacks) {
-      const startTime = getCurrentTime();
+      const startTime = audioContext.currentTime;
       sequencer.handleStart?.();
-      const getRelativeTime = () => getCurrentTime() - startTime;
+
+      const getRelativeTime = () => audioContext.currentTime - startTime;
 
       let timePos = 0;
       {
-        const timePosNext = intervalSec + lookaheadSec;
+        const timePosNext = lookaheadSec;
         callSequencerScheduling(
           sequencer,
           startTime,
@@ -71,7 +68,7 @@ export function createSequencerTickDriver(
       }
       timerId = setInterval(() => {
         const relativeTime = getRelativeTime();
-        const timePosNext = relativeTime + intervalSec + lookaheadSec;
+        const timePosNext = relativeTime + lookaheadSec;
         callSequencerScheduling(
           sequencer,
           startTime,
