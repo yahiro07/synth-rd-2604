@@ -1,4 +1,5 @@
 export type SequencerCallbacks = {
+  handleStart?(startTime: number): void;
   //480ppq based
   processScheduling(ppqFrom: number, ppqTo: number, bpm: number): void;
 };
@@ -44,18 +45,29 @@ export function createSequencerTickDriver(
     },
     start(sequencer: SequencerCallbacks) {
       const startTime = audioContext.currentTime;
+      sequencer.handleStart?.(startTime);
       const getRelativeTime = () => audioContext.currentTime - startTime;
 
       let timePos = 0;
       {
         const timePosNext = intervalSec + lookaheadSec;
-        callSequencerScheduling(sequencer, timePos, timePosNext, state.bpm);
+        callSequencerScheduling(
+          sequencer,
+          timePos,
+          timePosNext,
+          state.bpm,
+        );
         timePos = timePosNext;
       }
       timerId = setInterval(() => {
         const relativeTime = getRelativeTime();
         const timePosNext = relativeTime + intervalSec + lookaheadSec;
-        callSequencerScheduling(sequencer, timePos, timePosNext, state.bpm);
+        callSequencerScheduling(
+          sequencer,
+          timePos,
+          timePosNext,
+          state.bpm,
+        );
         timePos = timePosNext;
       }, intervalMs);
     },

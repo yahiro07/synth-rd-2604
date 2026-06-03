@@ -12,6 +12,7 @@ import {
 import { makeStepSchedulingSource } from "@/step-scheduling-source";
 
 const audioContext = new AudioContext();
+let playbackStartTime = 0;
 
 async function resumeIfNeed() {
   if (audioContext.state === "suspended") {
@@ -29,9 +30,11 @@ function playBeep(freq: number, time: number, duration: number) {
 }
 
 const sequencer: SequencerCallbacks = {
+  handleStart(startTime) {
+    playbackStartTime = startTime;
+  },
   processScheduling(ppqFrom, ppqTo, bpm) {
     const { stepPoints, stepDuration } = makeStepSchedulingSource(
-      audioContext.currentTime,
       ppqFrom,
       ppqTo,
       bpm,
@@ -41,7 +44,7 @@ const sequencer: SequencerCallbacks = {
     for (const { time, stepIndex } of stepPoints) {
       if (stepIndex % 4 === 0) {
         const freq = 440;
-        playBeep(freq, time, stepDuration * 0.5);
+        playBeep(freq, playbackStartTime + time, stepDuration * 0.5);
       }
     }
   },
@@ -70,12 +73,15 @@ const actions = {
 };
 
 const App = () => {
+  const { playing, bpm } = store.useSnapshot();
   return (
     <div className="h-dvh flex-c gap-4">
-      <Button onClick={actions.togglePlayState}>play</Button>
+      <Button active={playing} onClick={actions.togglePlayState}>
+        play
+      </Button>
       <NumberSliderBox
         label="bpm"
-        value={store.state.bpm}
+        value={bpm}
         onChange={actions.setBpm}
         min={60}
         max={240}
