@@ -1,13 +1,13 @@
 export type StepSchedulingSource = {
   stepPoints: {
-    time: number; //sec from playback start
+    time: number; //AudioContext time
     stepIndex: number;
   }[];
   stepDuration: number; //sec
 };
 
 export function makeStepSchedulingSource(
-  startTime: number,
+  startTime: number, //AudioContext.currentTime at playback start
   ppqFrom: number,
   ppqTo: number,
   bpm: number,

@@ -49,7 +49,7 @@ function sequencerCore_scheduleSteps(source: StepSchedulingSource) {
       playBeep(freq, time, stepDuration * 0.5, 1);
     } else {
       const freq = 220;
-      playBeep(freq, time, stepDuration * 0.1, 0.2);
+      playBeep(freq, time, stepDuration * 0.2, 0.2);
     }
   }
 }
@@ -66,7 +66,7 @@ const sequencer: SequencerCallbacks = {
     sequencerCore_scheduleSteps(stepSchedulingSource);
   },
 };
-const sequenceTickDriver = createSequencerTickDriver(audioContext);
+const sequenceTickDriver = createSequencerTickDriver(audioContext, 25, 10);
 
 const store = createStore({ playing: false, bpm: 120 });
 
