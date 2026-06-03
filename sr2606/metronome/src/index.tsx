@@ -37,18 +37,19 @@ function playBeep(
   oscillatorNode.connect(gainNode);
   gainNode.connect(audioContext.destination);
   oscillatorNode.start();
+  gainNode.gain.setValueAtTime(0, time + duration);
   oscillatorNode.stop(time + duration);
 }
 
 function sequencerCore_scheduleSteps(source: StepSchedulingSource) {
   const { stepPoints, stepDuration } = source;
   for (const { time, stepIndex } of stepPoints) {
-    if (stepIndex % 4 === 0) {
-      const freq = 80;
+    if (stepIndex % 16 === 0) {
+      const freq = 880;
       playBeep(freq, time, stepDuration * 0.5, 1);
     } else {
-      const freq = 110;
-      playBeep(freq, time, stepDuration * 0.5, 0.2, "sawtooth");
+      const freq = 220;
+      playBeep(freq, time, stepDuration * 0.1, 0.2);
     }
   }
 }
